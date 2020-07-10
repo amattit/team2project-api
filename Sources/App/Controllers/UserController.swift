@@ -1,6 +1,6 @@
 import Crypto
 import Vapor
-import FluentSQLite
+import FluentMySQL
 
 /// Creates new users and logs them in.
 final class UserController {
@@ -8,31 +8,26 @@ final class UserController {
     func login(_ req: Request) throws -> Future<UserToken> {
         // get user auth'd by basic auth middleware
         let user = try req.requireAuthenticated(User.self)
-        
         // create new token for this user
         let token = try UserToken.create(userID: user.requireID())
-        
         // save and return token
         return token.save(on: req)
     }
     
     /// Creates a new user.
-    func create(_ req: Request) throws -> Future<UserResponse> {
+    func create(_ req: Request) throws -> Future<UserToken> {
         // decode request content
         return try req.content.decode(CreateUserRequest.self).flatMap { user -> Future<User> in
             // verify that passwords match
             guard user.password == user.verifyPassword else {
                 throw Abort(.badRequest, reason: "Password and verification must match.")
             }
-            
-            // hash user's password using BCrypt
             let hash = try BCrypt.hash(user.password)
-            // save new user
-            return User(id: nil, name: user.name, email: user.email, passwordHash: hash)
+            return User(id: nil, email: user.email, passwordHash: hash)
                 .save(on: req)
-        }.map { user in
-            // map to public user response (omits password hash)
-            return try UserResponse(id: user.requireID(), name: user.name, email: user.email)
+        }.flatMap { user in
+            let token = try UserToken.create(userID: user.requireID())
+            return token.save(on: req)
         }
     }
 }
@@ -59,9 +54,6 @@ struct UserResponse: Content {
     /// User's unique identifier.
     /// Not optional since we only return users that exist in the DB.
     var id: Int
-    
-    /// User's full name.
-    var name: String
     
     /// User's email address.
     var email: String

@@ -1,11 +1,12 @@
 import Authentication
 import Crypto
-import FluentSQLite
 import Vapor
+import FluentMySQL
 
 /// An ephermal authentication token that identifies a registered user.
-final class UserToken: SQLiteModel {
+final class UserToken: MySQLModel {
     /// Creates a new `UserToken` for a given user.
+//    typealias Database = MySQLDatabase
     static func create(userID: User.ID) throws -> UserToken {
         // generate a random 128-bit, base64-encoded string.
         let string = try CryptoRandom().generateData(count: 16).base64EncodedString()
@@ -13,8 +14,7 @@ final class UserToken: SQLiteModel {
         return .init(string: string, userID: userID)
     }
     
-    /// See `Model`.
-    static var deletedAtKey: TimestampKey? { return \.expiresAt }
+    static var name: String = "user_token"
     
     /// UserToken's unique identifier.
     var id: Int?
@@ -62,21 +62,25 @@ extension UserToken: Token {
 }
 
 /// Allows `UserToken` to be used as a Fluent migration.
-extension UserToken: Migration {
-    /// See `Migration`.
-    static func prepare(on conn: SQLiteConnection) -> Future<Void> {
-        return SQLiteDatabase.create(UserToken.self, on: conn) { builder in
-            builder.field(for: \.id, isIdentifier: true)
-            builder.field(for: \.string)
-            builder.field(for: \.userID)
-            builder.field(for: \.expiresAt)
-            builder.reference(from: \.userID, to: \User.id)
-        }
-    }
-}
+//extension UserToken: Migration {
+//    /// See `Migration`.
+//    static func prepare(on conn: MySQLConnection) -> Future<Void> {
+//        return MySQLDatabase.create(UserToken.self, on: conn) { builder in
+//            builder.field(for: \.id, isIdentifier: true)
+//            builder.field(for: \.string)
+//            builder.field(for: \.userID)
+//            builder.field(for: \.expiresAt)
+//            builder.reference(from: \.userID, to: \User.id)
+//
+//            
+//        }
+//    }
+//}
 
 /// Allows `UserToken` to be encoded to and decoded from HTTP messages.
 extension UserToken: Content { }
 
 /// Allows `UserToken` to be used as a dynamic parameter in route definitions.
 extension UserToken: Parameter { }
+
+extension UserToken: MySQLMigration { }
