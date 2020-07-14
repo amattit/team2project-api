@@ -8,9 +8,9 @@ public func routes(_ router: Router) throws {
     let userController = UserController()
     let projectController = ProjectController()
     let v1 = router.grouped("api", "v1")
-    router.post("signup", use: userController.create)
+    router.post("api", "v1", "signup", use: userController.create)
     
-    router.get("project", use: projectController.allProjects)
+    router.get("api", "v1", "project", use: projectController.allProjects)
     // basic / password auth protected routes
     let basic = v1.grouped(User.basicAuthMiddleware(using: BCryptDigest()))
     basic.post("login", use: userController.login)

@@ -37,7 +37,7 @@ final class UserController {
 /// Data required to create a user.
 struct CreateUserRequest: Content {
     /// User's full name.
-    var name: String
+    var name: String?
     
     /// User's email address.
     var email: String
