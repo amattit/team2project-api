@@ -15,10 +15,12 @@ final class ProjectController {
     }
     
     
-    func createProject(_ req: Request) throws -> Future<Project> {
+    func createProject(_ req: Request) throws -> Future<CreateProjectResponse> {
         let user = try req.requireAuthenticated(User.self)
         return try req.content.decode(CreateProjectRequest.self).flatMap { request in
             return Project(id: nil, name: request.name, userID: try user.requireID(), description: request.description).save(on: req)
+        }.map { pr in
+            return CreateProjectResponse(id: try pr.requireID(), name: pr.title, description: pr.description, created: pr.created)
         }
     }
     
@@ -52,5 +54,12 @@ struct ProjectListResponse: Content {
     let description: String
     let username: String?
     let useremail: String
+    let created: Date
+}
+
+struct CreateProjectResponse: Content {
+    let id: Int
+    let name: String
+    let description: String
     let created: Date
 }
