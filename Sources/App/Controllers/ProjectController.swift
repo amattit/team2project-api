@@ -8,7 +8,7 @@ final class ProjectController {
         return Project.query(on: req).all().flatMap {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).map {
-                    return ProjectListResponse(name: project.title, description: project.description, username: $0.name, useremail: $0.email)
+                    return ProjectListResponse(id: project.id!, name: project.title, description: project.description, username: $0.name, useremail: $0.email)
                 }
             }.flatten(on: req)
         }
@@ -47,6 +47,7 @@ struct CreateProjectRequest: Content {
 }
 
 struct ProjectListResponse: Content {
+    let id: Int
     let name: String
     let description: String
     let username: String?
