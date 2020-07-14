@@ -34,6 +34,60 @@ final class ProjectController {
         }.transform(to: .ok)
     }
     
+    func addLinkToProject(_ req: Request) throws -> Future<HTTPStatus> {
+        let user = try req.requireAuthenticated(User.self)
+        return try req.parameters.next(Project.self).flatMap { project -> Future<Void> in
+            guard try user.requireID() == project.ownerId else {
+                throw Abort(.forbidden)
+            }
+            return try req.content.decode(AddLinkRequest.self).map { link in
+                return Link(title: link.title, link: link.link, ownerId: try user.requireID(), projectId: try project.requireID()).save(on: req)
+            }
+        }.transform(to: .ok)
+    }
+    
+    func deleteLink(_ req: Request) throws -> Future<HTTPStatus> {
+        let user = try req.requireAuthenticated(User.self)
+        let _ = try req.parameters.next(Project.self)
+        return try req.parameters.next(Link.self).flatMap { link -> Future<Void> in
+            guard try user.requireID() == link.ownerId else {
+                throw Abort(.forbidden)
+            }
+            return link.delete(on: req)
+        }.transform(to: .ok)
+    }
+    
+    func updateLink(_ req: Request) throws -> Future<HTTPStatus> {
+        let user = try req.requireAuthenticated(User.self)
+        let _ = try req.parameters.next(Project.self)
+        return try req.parameters.next(Link.self).flatMap { link in
+            guard try user.requireID() == link.ownerId else {
+                throw Abort(.forbidden)
+            }
+        
+            return try req.content.decode(UpdateLinkRequest.self).flatMap { t in
+                guard try link.requireID() == t.id else {
+                    throw Abort(.forbidden)
+                }
+                link.title = t.title
+                link.link = t.link
+                return link.update(on: req).transform(to: HTTPStatus.ok)
+            }
+        }
+//        return Link.query(on: req).filter(\.id, .equal, link.i)
+    }
+    
+    func getLinksForProject(_ req: Request) throws -> Future<[LinkResponse]> {
+        let _ = try req.requireAuthenticated(User.self)
+        return try req.parameters.next(Project.self)
+            .flatMap { try $0.links.query(on: req).all() }
+            .map {
+                try $0.map { lnk in
+                    return LinkResponse(id: try lnk.requireID(), title: lnk.title, link: lnk.link)
+                }
+        }
+    }
+    
     private func getUserFor(_ project: Project, on req: Request) throws -> Future<User> {
         return project.user.query(on: req).first().unwrap(or: Abort(.notFound, reason: "Пользователь не найден"))
     }
@@ -62,4 +116,21 @@ struct CreateProjectResponse: Content {
     let name: String
     let description: String
     let created: Date
+}
+
+struct AddLinkRequest: Content {
+    let title: String
+    let link: String
+}
+
+struct UpdateLinkRequest: Content {
+    let title: String
+    let link: String
+    let id: Int
+}
+
+struct LinkResponse: Content {
+    let id: Int
+    let title: String
+    let link: String
 }
