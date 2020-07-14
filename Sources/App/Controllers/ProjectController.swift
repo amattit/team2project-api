@@ -4,8 +4,14 @@ import FluentSQLite
 /// Simple todo-list controller.
 final class ProjectController {
 
-    func allProjects(_ req: Request) throws -> Future<[Project]> {
-        return Project.query(on: req).all()
+    func allProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
+        return Project.query(on: req).all().flatMap {
+            return try $0.map { project in
+                return try self.getUserFor(project, on: req).map {
+                    return ProjectListResponse(name: project.title, description: project.description, username: $0.name, useremail: $0.email)
+                }
+            }.flatten(on: req)
+        }
     }
     
     
@@ -19,11 +25,15 @@ final class ProjectController {
     func deleteProject(_ req: Request) throws -> Future<HTTPStatus> {
         let user = try req.requireAuthenticated(User.self)
         return try req.parameters.next(Project.self).flatMap { project -> Future<Void> in
-            guard try project.creator_id == user.requireID() else {
+            guard try project.ownerId == user.requireID() else {
                 throw Abort(.forbidden)
             }
             return project.delete(on: req)
         }.transform(to: .ok)
+    }
+    
+    private func getUserFor(_ project: Project, on req: Request) throws -> Future<User> {
+        return project.user.query(on: req).first().unwrap(or: Abort(.notFound, reason: "Пользователь не найден"))
     }
  }
 
@@ -33,8 +43,12 @@ final class ProjectController {
 struct CreateProjectRequest: Content {
     /// Todo title.
     let name: String
-    let link_to_site: String?
-    let link_to_description: String?
-    let link_to_app: String?
     let description: String
+}
+
+struct ProjectListResponse: Content {
+    let name: String
+    let description: String
+    let username: String?
+    let useremail: String
 }

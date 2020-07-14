@@ -40,7 +40,8 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: User.self, database: .mysql)
     migrations.add(model: UserToken.self, database: .mysql)
     migrations.add(model: Project.self, database: .mysql)
+    migrations.add(model: Link.self, database: .mysql)
 //
-//    services.register(migrations)
+    services.register(migrations)
 
 }

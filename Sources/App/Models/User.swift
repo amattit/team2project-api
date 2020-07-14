@@ -5,15 +5,12 @@ import FluentMySQL
 
 /// A registered user, capable of owning todo items.
 final class User: MySQLModel {
-    
-    static var name: String = "user"
-
     /// User's unique identifier.
     /// Can be `nil` if the user has not been saved yet.
     var id: Int?
     
     /// User's full name.
-//    var name: String
+    var name: String?
     
     /// User's email address.
     var email: String
@@ -25,13 +22,14 @@ final class User: MySQLModel {
     
     var auth_key: String
     /// Creates a new `User`.
-    init(id: Int? = nil, email: String, passwordHash: String) {
+    init(id: Int? = nil, email: String, passwordHash: String, name: String? = nil) {
         self.id = id
 //        self.name = name
         self.email = email
         self.password = passwordHash
         self.created = Date()
         self.auth_key = String(UUID().uuidString.prefix(32))
+        self.name = name
     }
 }
 
@@ -61,9 +59,14 @@ extension User: Content { }
 extension User: Parameter { }
 
 extension User: MySQLMigration {
-//    static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
-//        return MySQLDatabase.create(User.self, on: conn) { (builder) in
-//            
-//        }
-//    }
+    static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
+        return MySQLDatabase.create(User.self, on: conn) { (builder) in
+            builder.field(for: \.id, isIdentifier: true)
+            builder.field(for: \.name)
+            builder.field(for: \.email)
+            builder.field(for: \.password)
+            builder.field(for: \.created)
+            builder.field(for: \.auth_key)
+        }
+    }
 }

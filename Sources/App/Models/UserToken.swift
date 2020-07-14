@@ -14,8 +14,6 @@ final class UserToken: MySQLModel {
         return .init(string: string, userID: userID)
     }
     
-    static var name: String = "user_token"
-    
     /// UserToken's unique identifier.
     var id: Int?
     
@@ -62,20 +60,20 @@ extension UserToken: Token {
 }
 
 /// Allows `UserToken` to be used as a Fluent migration.
-//extension UserToken: Migration {
-//    /// See `Migration`.
-//    static func prepare(on conn: MySQLConnection) -> Future<Void> {
-//        return MySQLDatabase.create(UserToken.self, on: conn) { builder in
-//            builder.field(for: \.id, isIdentifier: true)
-//            builder.field(for: \.string)
-//            builder.field(for: \.userID)
-//            builder.field(for: \.expiresAt)
-//            builder.reference(from: \.userID, to: \User.id)
-//
-//            
-//        }
-//    }
-//}
+extension UserToken: Migration {
+    /// See `Migration`.
+    static func prepare(on conn: MySQLConnection) -> Future<Void> {
+        return MySQLDatabase.create(UserToken.self, on: conn) { builder in
+            builder.field(for: \.id, isIdentifier: true)
+            builder.field(for: \.string)
+            builder.field(for: \.userID)
+            builder.field(for: \.expiresAt)
+            builder.reference(from: \.userID, to: \User.id)
+
+            
+        }
+    }
+}
 
 /// Allows `UserToken` to be encoded to and decoded from HTTP messages.
 extension UserToken: Content { }
