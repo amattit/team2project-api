@@ -8,18 +8,21 @@ final class ProjectController {
         return Project.query(on: req).all().flatMap {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).map { user in
-                    return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: UserResponse(id: try user.requireID(), email: user.email))
+                    return try self.getLabels(for: project, on: req).map { labels in
+                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: UserResponse(id: try user.requireID(), email: user.email), labels: labels)
+                    }
                 }
             }.flatten(on: req)
-        }
+        }.flatMap { $0.flatten(on: req) }
     }
     
     func projectDetail(_ req: Request) throws -> Future<DetailProjectResponse> {
         return try req.parameters.next(Project.self).flatMap { project in
-            return try self.getLinksRs(project: project, on: req).map { links in
-                return DetailProjectResponse(id: try project.requireID(), name: project.title, description: project.description, created: project.created, links: links)
+            return try self.getLinksRs(project: project, on: req).flatMap { links in
+                return try self.getLabels(for: project, on: req).map { labels in
+                    return DetailProjectResponse(id: try project.requireID(), name: project.title, description: project.description, created: project.created, links: links, labels: labels)
+                }
             }
-            
         }
     }
     
@@ -107,6 +110,25 @@ final class ProjectController {
         }
     }
     
+    func getLabels(_ req: Request) throws -> Future<[LabelEnum]> {
+        return LabelEnum.query(on: req).all()
+    }
+    
+    func addLabelToProject(_ req: Request) throws -> Future<HTTPStatus> {
+        let user = try req.requireAuthenticated(User.self)
+        return try req.parameters.next(Project.self).flatMap { project in
+            guard try user.requireID() == project.requireID() else {
+                throw Abort(.forbidden, reason: "Только пользователь создавший проект может внести изменения в лэйблы")
+            }
+            return try req.content.decode(AddLabelToProject.self).map { labelDto in
+                return try self.getLabelById(labelDto.labelId, on: req).map { label in
+                    return project.labels.attach(label, on: req)
+                }
+            }.transform(to: HTTPStatus.ok)
+        }
+        
+    }
+    
     private func getUserFor(_ project: Project, on req: Request) throws -> Future<User> {
         return project.user.query(on: req).first().unwrap(or: Abort(.notFound, reason: "Пользователь не найден"))
     }
@@ -118,6 +140,14 @@ final class ProjectController {
                 LinkResponse(id: try $0.requireID(), title: $0.title, link: $0.link)
             }
         }
+    }
+    
+    private func getLabelById(_ id: Int, on req: Request) throws -> Future<LabelEnum> {
+        return LabelEnum.query(on: req).filter(\.id, .equal, id).first().unwrap(or: Abort(.notFound, reason: "Label not found"))
+    }
+    
+    private func getLabels(for project: Project, on req: Request) throws -> Future<[LabelEnum]> {
+        return try project.labels.query(on: req).all()
     }
     
  }
@@ -144,6 +174,7 @@ struct ProjectListResponse: Content {
     let useremail: String
     let created: Date
     let user: UserResponse?
+    let labels: [LabelEnum]?
 }
 
 struct CreateProjectResponse: Content {
@@ -160,6 +191,7 @@ struct DetailProjectResponse: Content {
     let description: String
     let created: Date
     let links: [LinkResponse]?
+    let labels: [LabelEnum]?
 }
 
 
@@ -178,4 +210,8 @@ struct LinkResponse: Content {
     let id: Int
     let title: String
     let link: String
+}
+
+struct AddLabelToProject: Content {
+    let labelId: Int
 }

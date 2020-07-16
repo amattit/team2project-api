@@ -28,4 +28,8 @@ public func routes(_ router: Router) throws {
     bearer.delete("project", Project.parameter, "link", Link.parameter, use: projectController.deleteLink)
     bearer.put("project", Project.parameter, "link", Link.parameter, use: projectController.updateLink)
     
+    //MARK: Labels
+    bearer.get("project", "label", use: projectController.getLabels)
+    //path project/1/label
+    bearer.post("project", Project.parameter, "label", use: projectController.addLabelToProject)
 }

@@ -42,6 +42,13 @@ extension Project {
     }
 }
 
+extension Project {
+    var labels: Siblings<Project, LabelEnum, ProjectLabel> {
+        return siblings()
+    }
+}
+
+
 /// Allows `Todo` to be used as a Fluent migration.
 extension Project: MySQLMigration {
     static func prepare(on connection: MySQLConnection) -> EventLoopFuture<Void> {
