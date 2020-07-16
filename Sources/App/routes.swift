@@ -19,6 +19,8 @@ public func routes(_ router: Router) throws {
     let bearer = v1.grouped(User.tokenAuthMiddleware())
     bearer.post("project", use: projectController.createProject)
     bearer.delete("project", Project.parameter, use: projectController.createProject)
+    bearer.put("project", Project.parameter, use: projectController.updateProject)
+    bearer.get("project", Project.parameter, use: projectController.projectDetail)
     
     //MARK: links
     bearer.get("project", Project.parameter, "link", use: projectController.getLinksForProject)

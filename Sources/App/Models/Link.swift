@@ -50,6 +50,8 @@ extension Link: MySQLMigration {
             builder.field(for: \.link)
             builder.field(for: \.ownerId)
             builder.field(for: \.projectId)
+            builder.field(for: \.created)
+            builder.field(for: \.updated)
             builder.reference(from: \.ownerId, to: \User.id)
             builder.reference(from: \.projectId, to: \Project.id)
         }
