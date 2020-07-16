@@ -18,14 +18,24 @@ final class Project: MySQLModel {
     
     /// Reference to user that owns this TODO.
     var ownerId: User.ID
+    
+    var imagePath: String?
+    
+    var isPublished: Int
 
-    /// Creates a new `Todo`.
-    init(id: Int? = nil, name: String, userID: User.ID, description: String) {
+    init(id: Int? = nil, name: String, userID: User.ID, description: String, imagePath: String? = nil, isPublished: Bool = false) {
         self.id = id
         self.title = name
         self.ownerId = userID
         self.description = description
         self.created = Date()
+        self.imagePath = imagePath
+        switch isPublished {
+        case true:
+            self.isPublished = 1
+        case false:
+            self.isPublished = 0
+        }
     }
 }
 
@@ -59,6 +69,8 @@ extension Project: MySQLMigration {
             builder.field(for: \.created)
             builder.field(for: \.updated)
             builder.field(for: \.ownerId)
+            builder.field(for: \.imagePath)
+            builder.field(for: \.isPublished)
             builder.reference(from: \.ownerId, to: \User.id)
         }
     }

@@ -5,7 +5,7 @@ import FluentSQLite
 final class ProjectController {
 
     func allProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
-        return Project.query(on: req).all().flatMap {
+        return Project.query(on: req).filter(\.isPublished, .equal, 1).all().flatMap {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).map { user in
                     return try self.getLabels(for: project, on: req).map { labels in
@@ -29,7 +29,7 @@ final class ProjectController {
     func createProject(_ req: Request) throws -> Future<CreateProjectResponse> {
         let user = try req.requireAuthenticated(User.self)
         return try req.content.decode(CreateProjectRequest.self).flatMap { request in
-            return Project(id: nil, name: request.name, userID: try user.requireID(), description: request.description).save(on: req).map {
+            return Project(id: nil, name: request.name, userID: try user.requireID(), description: request.description, imagePath: request.imagePath).save(on: req).map {
                 return CreateProjectResponse(id: try $0.requireID(), name: $0.title, description: $0.description, created: Date(), user: UserResponse(id: try user.requireID(), email: user.email))
             }
         }
@@ -42,11 +42,43 @@ final class ProjectController {
                 guard try user.requireID() == project.ownerId else {
                     throw Abort(.forbidden)
                 }
-                project.title = updateRequest.name
-                project.description = updateRequest.description
+                if let title = updateRequest.name {
+                    project.title = title
+                }
+                
+                if let description = updateRequest.description {
+                    project.description = description
+                }
+                
+                if let imagePath = updateRequest.imagePath {
+                    project.imagePath = imagePath
+                }
+                
                 project.updated = Date()
                 return project.save(on: req)
             }
+        }
+    }
+    
+    func publicateProject(_ req: Request) throws -> Future<HTTPStatus> {
+        let user = try req.requireAuthenticated(User.self)
+        return try req.parameters.next(Project.self).flatMap { project in
+            guard try user.requireID() == project.ownerId else {
+                throw Abort(.forbidden, reason: "Только автор проекта может публиковать проект")
+            }
+            project.isPublished = 1
+            return project.save(on: req).transform(to: HTTPStatus.ok)
+        }
+    }
+    
+    func checkoutProject(_ req: Request) throws -> Future<HTTPStatus> {
+        let user = try req.requireAuthenticated(User.self)
+        return try req.parameters.next(Project.self).flatMap { project in
+            guard try user.requireID() == project.ownerId else {
+                throw Abort(.forbidden, reason: "Только автор проекта может вернуть проект в черновик")
+            }
+            project.isPublished = 0
+            return project.save(on: req).transform(to: HTTPStatus.ok)
         }
     }
     
@@ -54,7 +86,7 @@ final class ProjectController {
         let user = try req.requireAuthenticated(User.self)
         return try req.parameters.next(Project.self).flatMap { project -> Future<Void> in
             guard try project.ownerId == user.requireID() else {
-                throw Abort(.forbidden)
+                throw Abort(.forbidden, reason: "Только автор проекта может удалить проект")
             }
             return project.delete(on: req)
         }.transform(to: .ok)
@@ -159,12 +191,13 @@ struct CreateProjectRequest: Content {
     /// Todo title.
     let name: String
     let description: String
+    let imagePath: String?
 }
 
 struct UpdateProjectRequest: Content {
-    let id: Int
-    let name: String
-    let description: String
+    let name: String?
+    let description: String?
+    let imagePath: String?
 }
 
 struct ProjectListResponse: Content {

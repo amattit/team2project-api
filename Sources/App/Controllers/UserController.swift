@@ -30,6 +30,32 @@ final class UserController {
             return token.save(on: req)
         }
     }
+    
+    func getSelf(_ req: Request) throws -> Future<Response> {
+        let user = try req.requireAuthenticated(User.self)
+        return try UserResponse(id: try user.requireID(), email: user.email, name: user.name, imagePath: user.imagePath).encode(for: req)
+    }
+    
+    func updateUser(_ req: Request) throws -> Future<UserResponse> {
+        let user = try req.requireAuthenticated(User.self)
+        return try req.content.decode(UpdateUserRequest.self).flatMap { userData in
+            if let email = userData.email {
+                user.email = email
+            }
+            
+            if let name = userData.name {
+                user.name = name
+            }
+            
+            if let imagePath = userData.imagePath {
+                user.imagePath = imagePath
+            }
+            
+            return user.save(on: req).map {
+                return try UserResponse(with: $0)
+            }
+        }
+    }
 }
 
 // MARK: Content
@@ -57,4 +83,34 @@ struct UserResponse: Content {
     
     /// User's email address.
     var email: String
+    
+    var name: String?
+    
+    var imagePath: String?
+    
+    init(id: Int, email: String, name: String? = nil, imagePath: String? = nil) {
+        self.id = id
+        self.email = email
+        self.name = name
+        self.imagePath = imagePath
+    }
+    
+    init(with user: User) throws {
+        self.id = try user.requireID()
+        self.email = user.email
+        self.name = user.name
+        self.imagePath = user.imagePath
+    }
+}
+
+struct SetImageRequest: Content {
+    let imagePath: String
+}
+
+struct UpdateUserRequest: Content {
+    var email: String?
+    
+    var name: String?
+    
+    var imagePath: String?
 }

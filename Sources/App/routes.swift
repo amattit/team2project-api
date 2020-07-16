@@ -8,19 +8,23 @@ public func routes(_ router: Router) throws {
     let userController = UserController()
     let projectController = ProjectController()
     let v1 = router.grouped("api", "v1")
-    router.post("api", "v1", "signup", use: userController.create)
-    
-    router.get("api", "v1", "project", use: projectController.allProjects)
-    // basic / password auth protected routes
     let basic = v1.grouped(User.basicAuthMiddleware(using: BCryptDigest()))
+    let bearer = v1.grouped(User.tokenAuthMiddleware())
+    // MARK: User
+    router.post("api", "v1", "signup", use: userController.create)
     basic.post("login", use: userController.login)
+    bearer.get("user", use: userController.getSelf)
+    bearer.put("user", use: userController.updateUser)
     
     // MARK: projects
-    let bearer = v1.grouped(User.tokenAuthMiddleware())
+    
+    router.get("api", "v1", "project", use: projectController.allProjects)
     bearer.post("project", use: projectController.createProject)
     bearer.delete("project", Project.parameter, use: projectController.createProject)
     bearer.put("project", Project.parameter, use: projectController.updateProject)
     bearer.get("project", Project.parameter, use: projectController.projectDetail)
+    bearer.put("project", Project.parameter, "public", use: projectController.publicateProject)
+    bearer.put("project", Project.parameter, "checkout", use: projectController.checkoutProject)
     
     //MARK: links
     bearer.get("project", Project.parameter, "link", use: projectController.getLinksForProject)
