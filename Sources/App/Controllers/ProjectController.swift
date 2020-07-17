@@ -249,7 +249,6 @@ struct AddLinkRequest: Content {
 struct UpdateLinkRequest: Content {
     let title: String
     let link: String
-//    let id: Int
 }
 
 struct LinkResponse: Content {

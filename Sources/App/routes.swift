@@ -20,7 +20,7 @@ public func routes(_ router: Router) throws {
     
     router.get("api", "v1", "project", use: projectController.allProjects)
     bearer.post("project", use: projectController.createProject)
-    bearer.delete("project", Project.parameter, use: projectController.createProject)
+    bearer.delete("project", Project.parameter, use: projectController.deleteProject)
     bearer.put("project", Project.parameter, use: projectController.updateProject)
     bearer.get("project", Project.parameter, use: projectController.projectDetail)
     bearer.put("project", Project.parameter, "public", use: projectController.publicateProject)
@@ -34,7 +34,6 @@ public func routes(_ router: Router) throws {
     
     //MARK: Labels
     bearer.get("project", "label", use: projectController.getLabels)
-    //path project/1/label
     bearer.post("project", Project.parameter, "label", use: projectController.addLabelToProject)
-    bearer.delete("project", Project.parameter, "label", use: projectController.addLabelToProject)
+    bearer.delete("project", Project.parameter, "label", use: projectController.removeLabelFromProject)
 }

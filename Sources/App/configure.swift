@@ -21,6 +21,13 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     // middlewares.use(SessionsMiddleware.self) // Enables sessions.
     // middlewares.use(FileMiddleware.self) // Serves files from `Public/` directory
     middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
+    let corsConfiguration = CORSMiddleware.Configuration(
+        allowedOrigin: .all,
+        allowedMethods: [.GET, .POST, .PUT, .OPTIONS, .DELETE, .PATCH],
+        allowedHeaders: [.accept, .authorization, .contentType, .origin, .xRequestedWith, .userAgent, .accessControlAllowOrigin]
+    )
+    let corsMiddleware = CORSMiddleware(configuration: corsConfiguration)
+    middlewares.use(corsMiddleware)
     services.register(middlewares)
 
     // Configure a SQLite database
@@ -34,6 +41,8 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     databases.add(database: mySQL, as: .mysql)
     services.register(databases)
 
+    
+    
     /// Configure migrations
     var migrations = MigrationConfig()
 //
