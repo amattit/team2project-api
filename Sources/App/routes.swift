@@ -36,4 +36,5 @@ public func routes(_ router: Router) throws {
     bearer.get("project", "label", use: projectController.getLabels)
     //path project/1/label
     bearer.post("project", Project.parameter, "label", use: projectController.addLabelToProject)
+    bearer.delete("project", Project.parameter, "label", use: projectController.addLabelToProject)
 }

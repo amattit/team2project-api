@@ -158,7 +158,20 @@ final class ProjectController {
                 }
             }.transform(to: HTTPStatus.ok)
         }
-        
+    }
+    
+    func removeLabelFromProject(_ req: Request) throws -> Future<HTTPStatus> {
+        let user = try req.requireAuthenticated(User.self)
+        return try req.parameters.next(Project.self).flatMap { project in
+            guard try user.requireID() == project.requireID() else {
+                throw Abort(.forbidden, reason: "Только пользователь создавший проект может внести изменения в лэйблы")
+            }
+            return try req.content.decode(AddLabelToProject.self).map { labelDto in
+                return try self.getLabelById(labelDto.labelId, on: req).map { label in
+                    return project.labels.detach(label, on: req)
+                }
+            }.transform(to: HTTPStatus.ok)
+        }
     }
     
     private func getUserFor(_ project: Project, on req: Request) throws -> Future<User> {
