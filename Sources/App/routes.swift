@@ -25,6 +25,7 @@ public func routes(_ router: Router) throws {
     bearer.get("project", Project.parameter, use: projectController.projectDetail)
     bearer.put("project", Project.parameter, "public", use: projectController.publicateProject)
     bearer.put("project", Project.parameter, "checkout", use: projectController.checkoutProject)
+    bearer.get("project","checkout", use: projectController.checkoutProjects)
     
     //MARK: links
     bearer.get("project", Project.parameter, "link", use: projectController.getLinksForProject)
