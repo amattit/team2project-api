@@ -74,3 +74,11 @@ extension User: MySQLMigration {
         }
     }
 }
+
+extension User: Validatable {
+    static func validations() throws -> Validations<User> {
+        var validations = Validations(User.self)
+        try validations.add(\.email, .email)
+        return validations
+    }
+}

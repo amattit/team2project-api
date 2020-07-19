@@ -42,7 +42,9 @@ final class ProjectController {
     func createProject(_ req: Request) throws -> Future<CreateProjectResponse> {
         let user = try req.requireAuthenticated(User.self)
         return try req.content.decode(CreateProjectRequest.self).flatMap { request in
-            return Project(id: nil, name: request.name, userID: try user.requireID(), description: request.description, imagePath: request.imagePath).save(on: req).map {
+            let project = Project(id: nil, name: request.name, userID: try user.requireID(), description: request.description, imagePath: request.imagePath)
+            try project.validate()
+            return project.save(on: req).map {
                 return CreateProjectResponse(id: try $0.requireID(), name: $0.title, description: $0.description, created: Date(), user: UserResponse(id: try user.requireID(), email: user.email))
             }
         }
@@ -68,6 +70,7 @@ final class ProjectController {
                 }
                 
                 project.updated = Date()
+                try project.validate()
                 return project.save(on: req)
             }
         }

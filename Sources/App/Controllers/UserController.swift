@@ -23,8 +23,9 @@ final class UserController {
                 throw Abort(.badRequest, reason: "Password and verification must match.")
             }
             let hash = try BCrypt.hash(user.password)
-            return User(id: nil, email: user.email, passwordHash: hash)
-                .save(on: req)
+            let user = User(id: nil, email: user.email, passwordHash: hash)
+            try user.validate()
+            return user.save(on: req)
         }.flatMap { user in
             let token = try UserToken.create(userID: user.requireID())
             return token.save(on: req)
@@ -50,7 +51,7 @@ final class UserController {
             if let imagePath = userData.imagePath {
                 user.imagePath = imagePath
             }
-            
+            try user.validate()
             return user.save(on: req).map {
                 return try UserResponse(with: $0)
             }
