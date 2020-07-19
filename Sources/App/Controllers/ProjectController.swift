@@ -22,7 +22,7 @@ final class ProjectController {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).map { user in
                     return try self.getLabels(for: project, on: req).map { labels in
-                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: UserResponse(id: try user.requireID(), email: user.email), labels: labels)
+                        return ProjectListResponse(id: try project.requireID(), name: project.title, description: project.description, useremail: user.email, created: project.created, user: UserResponse(id: try user.requireID(), email: user.email), labels: labels)
                     }
                 }
             }.flatten(on: req)
@@ -162,7 +162,7 @@ final class ProjectController {
     func addLabelToProject(_ req: Request) throws -> Future<HTTPStatus> {
         let user = try req.requireAuthenticated(User.self)
         return try req.parameters.next(Project.self).flatMap { project in
-            guard try user.requireID() == project.requireID() else {
+            guard try user.requireID() == project.ownerId else {
                 throw Abort(.forbidden, reason: "Только пользователь создавший проект может внести изменения в лэйблы")
             }
             return try req.content.decode(AddLabelToProject.self).map { labelDto in
@@ -176,7 +176,7 @@ final class ProjectController {
     func removeLabelFromProject(_ req: Request) throws -> Future<HTTPStatus> {
         let user = try req.requireAuthenticated(User.self)
         return try req.parameters.next(Project.self).flatMap { project in
-            guard try user.requireID() == project.requireID() else {
+            guard try user.requireID() == project.ownerId else {
                 throw Abort(.forbidden, reason: "Только пользователь создавший проект может внести изменения в лэйблы")
             }
             return try req.content.decode(AddLabelToProject.self).map { labelDto in
