@@ -296,8 +296,8 @@ struct AllMyProjectsQuery: Content {
 }
 
 extension AllMyProjectsQuery {
-    let value: Int {
-        switch self {
+    var value: Int {
+        switch isPublished {
         case false:
             return 0
         default:
