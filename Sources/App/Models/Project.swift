@@ -85,8 +85,8 @@ extension Project: Parameter { }
 extension Project: Validatable {
     static func validations() throws -> Validations<Project> {
         var validations = Validations(Project.self)
-        try validations.add(\.title, .alphanumeric && .count(3...255))
-        try validations.add(\.description, .alphanumeric && .count(3...255))
+        try validations.add(\.title, .count(3...255))
+        try validations.add(\.description, .count(3...255))
         return validations
     }
 }
