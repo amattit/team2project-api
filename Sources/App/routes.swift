@@ -19,6 +19,7 @@ public func routes(_ router: Router) throws {
     // MARK: projects
     
     router.get("api", "v1", "project", use: projectController.allProjects)
+    bearer.get("project", "my", use: projectController.allMyPublickProjects)
     bearer.post("project", use: projectController.createProject)
     bearer.delete("project", Project.parameter, use: projectController.deleteProject)
     bearer.put("project", Project.parameter, use: projectController.updateProject)

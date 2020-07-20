@@ -16,6 +16,20 @@ final class ProjectController {
         }.flatMap { $0.flatten(on: req) }
     }
     
+    func allMyPublickProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
+        let user = try req.requireAuthenticated(User.self)
+        let query = try req.query.decode(AllMyProjectsQuery.self)
+        return Project.query(on: req).filter(\.ownerId, .equal, try user.requireID()).filter(\.isPublished, .equal, query.value).all().flatMap {
+            return try $0.map { project in
+                return try self.getUserFor(project, on: req).map { user in
+                    return try self.getLabels(for: project, on: req).map { labels in
+                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels)
+                    }
+                }
+            }.flatten(on: req)
+        }.flatMap { $0.flatten(on: req) }
+    }
+    
     func checkoutProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
         let user = try req.requireAuthenticated(User.self)
         return Project.query(on: req).filter(\.ownerId, .equal, try user.requireID()).filter(\.isPublished, .equal, 0).all().flatMap {
@@ -275,4 +289,19 @@ struct LinkResponse: Content {
 
 struct AddLabelToProject: Content {
     let labelId: Int
+}
+
+struct AllMyProjectsQuery: Content {
+    let isPublished: Bool
+}
+
+extension AllMyProjectsQuery {
+    let value: Int {
+        switch self {
+        case false:
+            return 0
+        default:
+            return 1
+        }
+    }
 }
