@@ -5,7 +5,6 @@
 //  Created by 16997598 on 21.07.2020.
 //
 import Vapor
-import FluentMySQL
 
 extension UserController {
     func getContactsEnum(_ req: Request) throws -> Future<[ContactEnum]> {
