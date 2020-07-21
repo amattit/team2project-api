@@ -49,6 +49,13 @@ extension User: PasswordAuthenticatable {
     }
 }
 
+extension User {
+    var contacts: Children<User, Contact> {
+        return children(\.ownerId)
+    }
+}
+
+
 /// Allows users to be verified by bearer / token auth middleware.
 extension User: TokenAuthenticatable {
     /// See `TokenAuthenticatable`.

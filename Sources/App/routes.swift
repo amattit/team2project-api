@@ -15,7 +15,19 @@ public func routes(_ router: Router) throws {
     basic.post("login", use: userController.login)
     bearer.get("user", use: userController.getSelf)
     bearer.put("user", use: userController.updateUser)
+    bearer.get("api", "v1", "user", User.parameter, use: userController.getUser)
     
+    //MARK: Contacts
+    /// get      /user/contact - все контакты + добавить в ответ user  -> getUserContacts
+    bearer.get("user", "contact", use: userController.getUserContacts)
+    /// get      /user/contactType - справочник видов контактов для предзаполнения -> userController.getContactsEnum
+    bearer.get("user", "contactType", use: userController.getContactsEnum)
+    /// post     /user/contact - создание контакта -> userController.createContact
+    bearer.post("user", "contact", use: userController.createContact)
+    /// put      /user/contact/{id} - изменение контакта -> userController.updateContact
+    bearer.put("user", "contact", Contact.parameter, use: userController.updateContact)
+    /// delete   /user/contact/{id} - удаление контакта -> userController.deleteContact
+    bearer.delete("user", "contact", Contact.parameter, use: userController.deleteContact)
     // MARK: projects
     
     router.get("api", "v1", "project", use: projectController.allProjects)

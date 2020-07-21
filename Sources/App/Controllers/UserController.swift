@@ -32,9 +32,19 @@ final class UserController {
         }
     }
     
-    func getSelf(_ req: Request) throws -> Future<Response> {
+    func getSelf(_ req: Request) throws -> Future<UserResponse> {
         let user = try req.requireAuthenticated(User.self)
-        return try UserResponse(id: try user.requireID(), email: user.email, name: user.name, imagePath: user.imagePath).encode(for: req)
+        return try user.contacts.query(on: req).all().map { contacts in
+            return try UserResponse(with: user, contacts: contacts)
+        }
+    }
+    
+    func getUser(_ req: Request) throws -> Future<UserResponse> {
+        return try req.parameters.next(User.self).flatMap { user in
+            return try user.contacts.query(on: req).all().map { contacts in
+                return try UserResponse(with: user, contacts: contacts)
+            }
+        }
     }
     
     func updateUser(_ req: Request) throws -> Future<UserResponse> {
@@ -89,6 +99,8 @@ struct UserResponse: Content {
     
     var imagePath: String?
     
+    var contacts: [ContactResponse]?
+    
     init(id: Int, email: String, name: String? = nil, imagePath: String? = nil) {
         self.id = id
         self.email = email
@@ -101,6 +113,11 @@ struct UserResponse: Content {
         self.email = user.email
         self.name = user.name
         self.imagePath = user.imagePath
+    }
+    
+    init(with user: User, contacts: [Contact]) throws {
+        try self.init(with: user)
+        self.contacts = try contacts.map { try ContactResponse(contact: $0)}
     }
 }
 
