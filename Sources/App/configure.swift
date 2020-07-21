@@ -54,6 +54,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: LabelEnum.self, database: .mysql)
     migrations.add(model: ProjectLabel.self, database: .mysql)
     migrations.add(migration: LabelEnumDefaultData.self, database: .mysql)
+    migrations.add(model: Contact.self, database: .mysql)
     migrations.add(model: ContactEnum.self, database: .mysql)
     migrations.add(migration: ContactEnumDefaultData.self, database: .mysql)
     services.register(migrations)

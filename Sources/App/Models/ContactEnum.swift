@@ -38,11 +38,11 @@ struct ContactEnumDefaultData: MySQLMigration {
     }
     
     static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
-        let _ = LabelEnum(title: "Instagram").save(on: conn).transform(to: ())
-        let _ = LabelEnum(title: "Telegram").save(on: conn).transform(to: ())
-        let _ = LabelEnum(title: "ВКонтакте").save(on: conn).transform(to: ())
-        let _ = LabelEnum(title: "Twitter").save(on: conn).transform(to: ())
-        let _ = LabelEnum(title: "Facebool").save(on: conn).transform(to: ())
-        return LabelEnum(title: "Openland").save(on: conn).transform(to: ())
+        let _ = ContactEnum(title: "Instagram").save(on: conn).transform(to: ())
+        let _ = ContactEnum(title: "Telegram").save(on: conn).transform(to: ())
+        let _ = ContactEnum(title: "ВКонтакте").save(on: conn).transform(to: ())
+        let _ = ContactEnum(title: "Twitter").save(on: conn).transform(to: ())
+        let _ = ContactEnum(title: "Facebook").save(on: conn).transform(to: ())
+        return ContactEnum(title: "Openland").save(on: conn).transform(to: ())
     }
 }
