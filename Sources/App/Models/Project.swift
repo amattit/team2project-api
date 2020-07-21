@@ -65,7 +65,7 @@ extension Project: MySQLMigration {
         return MySQLDatabase.create(Project.self, on: connection) { (builder) in
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.title)
-            builder.field(for: \.description)
+            builder.field(for: \.description, type: .varchar(3000, characterSet: nil, collate: nil))
             builder.field(for: \.created)
             builder.field(for: \.updated)
             builder.field(for: \.ownerId)
@@ -86,7 +86,7 @@ extension Project: Validatable {
     static func validations() throws -> Validations<Project> {
         var validations = Validations(Project.self)
         try validations.add(\.title, .count(3...255))
-        try validations.add(\.description, .count(3...255))
+        try validations.add(\.description, .count(3...3000))
         return validations
     }
 }
