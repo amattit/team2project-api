@@ -55,12 +55,15 @@ struct UserResponse: Content {
     
     var contacts: [ContactResponse]?
     
-    init(id: Int, email: String, name: String? = nil, imagePath: String? = nil, about: String? = nil) {
+    var location: String?
+    
+    init(id: Int, email: String, name: String? = nil, imagePath: String? = nil, about: String? = nil, location: String? = nil) {
         self.id = id
         self.email = email
         self.name = name
         self.imagePath = imagePath
         self.about = about
+        self.location = location
     }
     
     init(with user: User) throws {
@@ -69,6 +72,7 @@ struct UserResponse: Content {
         self.name = user.name
         self.imagePath = user.imagePath
         self.about = user.about
+        self.location = user.location
     }
     
     init(with user: User, contacts: [Contact]) throws {
@@ -89,4 +93,6 @@ struct UpdateUserRequest: Content {
     var imagePath: String?
     
     var about: String?
+    
+    var location: String?
 }

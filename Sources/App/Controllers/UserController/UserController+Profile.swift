@@ -41,6 +41,11 @@ extension UserController {
             if let about = userData.about {
                 user.about = about
             }
+            
+            if let location = userData.location {
+                user.location = location
+            }
+            
             try user.validate()
             return user.save(on: req).map {
                 return try UserResponse(with: $0)

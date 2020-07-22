@@ -27,8 +27,10 @@ final class User: MySQLModel {
     var role: String?
     
     var about: String?
+    
+    var location: String?
     /// Creates a new `User`.
-    init(id: Int? = nil, email: String, passwordHash: String, name: String? = nil, imagePath: String? = nil) {
+    init(id: Int? = nil, email: String, passwordHash: String, name: String? = nil, imagePath: String? = nil, location: String? = nil) {
         self.id = id
 //        self.name = name
         self.email = email
@@ -37,6 +39,7 @@ final class User: MySQLModel {
         self.auth_key = String(UUID().uuidString.prefix(32))
         self.name = name
         self.imagePath = imagePath
+        self.location = location
     }
 }
 
@@ -84,6 +87,7 @@ extension User: MySQLMigration {
             builder.field(for: \.imagePath)
             builder.field(for: \.role)
             builder.field(for: \.about)
+            builder.field(for: \.location)
         }
     }
 }
