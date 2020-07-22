@@ -51,13 +51,16 @@ struct UserResponse: Content {
     
     var imagePath: String?
     
+    var about: String?
+    
     var contacts: [ContactResponse]?
     
-    init(id: Int, email: String, name: String? = nil, imagePath: String? = nil) {
+    init(id: Int, email: String, name: String? = nil, imagePath: String? = nil, about: String? = nil) {
         self.id = id
         self.email = email
         self.name = name
         self.imagePath = imagePath
+        self.about = about
     }
     
     init(with user: User) throws {
@@ -65,6 +68,7 @@ struct UserResponse: Content {
         self.email = user.email
         self.name = user.name
         self.imagePath = user.imagePath
+        self.about = user.about
     }
     
     init(with user: User, contacts: [Contact]) throws {
