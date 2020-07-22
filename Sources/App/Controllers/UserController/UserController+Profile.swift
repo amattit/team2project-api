@@ -37,6 +37,10 @@ extension UserController {
             if let imagePath = userData.imagePath {
                 user.imagePath = imagePath
             }
+            
+            if let about = userData.about {
+                user.about = about
+            }
             try user.validate()
             return user.save(on: req).map {
                 return try UserResponse(with: $0)

@@ -87,4 +87,6 @@ struct UpdateUserRequest: Content {
     var name: String?
     
     var imagePath: String?
+    
+    var about: String?
 }

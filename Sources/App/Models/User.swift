@@ -92,6 +92,7 @@ extension User: Validatable {
     static func validations() throws -> Validations<User> {
         var validations = Validations(User.self)
         try validations.add(\.email, .email)
+        try validations.add(\.about, .count(0...6000) || .nil)
         return validations
     }
 }
