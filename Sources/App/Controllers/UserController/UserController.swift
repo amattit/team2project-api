@@ -17,15 +17,21 @@ final class UserController {
     /// Creates a new user.
     func create(_ req: Request) throws -> Future<UserToken> {
         // decode request content
-        return try req.content.decode(CreateUserRequest.self).flatMap { user -> Future<User> in
+        return try req.content.decode(CreateUserRequest.self).flatMap { userDto -> Future<User> in
             // verify that passwords match
-            guard user.password == user.verifyPassword else {
+            guard userDto.password == userDto.verifyPassword else {
                 throw Abort(.badRequest, reason: "Password and verification must match.")
             }
-            let hash = try BCrypt.hash(user.password)
-            let user = User(id: nil, email: user.email, passwordHash: hash)
+            let user = try User(with: userDto)
             try user.validate()
-            return user.save(on: req)
+            return user.save(on: req).map { user in
+                if let link = userDto.openLandProfileLink {
+                    let contact = Contact(title: "Openland", link: link, ownerId: try user.requireID())
+                    let _ = contact.save(on: req)
+                    return user
+                }
+                return user
+            }
         }.flatMap { user in
             let token = try UserToken.create(userID: user.requireID())
             return token.save(on: req)

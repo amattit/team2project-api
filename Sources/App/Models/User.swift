@@ -23,6 +23,10 @@ final class User: MySQLModel {
     var auth_key: String
     
     var imagePath: String?
+    
+    var role: String?
+    
+    var about: String?
     /// Creates a new `User`.
     init(id: Int? = nil, email: String, passwordHash: String, name: String? = nil, imagePath: String? = nil) {
         self.id = id
@@ -78,6 +82,8 @@ extension User: MySQLMigration {
             builder.field(for: \.created)
             builder.field(for: \.auth_key)
             builder.field(for: \.imagePath)
+            builder.field(for: \.role)
+            builder.field(for: \.about)
         }
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import Vapor
+import Crypto
 // MARK: Content
 
 /// Data required to create a user.
@@ -21,6 +22,20 @@ struct CreateUserRequest: Content {
     
     /// User's password repeated to ensure they typed it correctly.
     var verifyPassword: String
+    
+    /// Роль пользователя
+    var userRole: String?
+    
+    var openLandProfileLink: String?
+    
+}
+
+extension User {
+    convenience init(with dto: CreateUserRequest) throws {
+        let hash = try BCrypt.hash(dto.password)
+        self.init(id: nil, email: dto.email, passwordHash: hash, name: dto.name, imagePath: nil)
+        self.role = dto.userRole
+    }
 }
 
 /// Public representation of user data.
