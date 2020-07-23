@@ -45,9 +45,11 @@ final class ProjectController {
     
     func projectDetail(_ req: Request) throws -> Future<DetailProjectResponse> {
         return try req.parameters.next(Project.self).flatMap { project in
-            return try self.getLinksRs(project: project, on: req).flatMap { links in
-                return try self.getLabels(for: project, on: req).map { labels in
-                    return DetailProjectResponse(id: try project.requireID(), name: project.title, description: project.description, created: project.created, links: links, labels: labels)
+            return try self.getLabels(for: project, on: req).flatMap { labels in
+                return try self.getLinksRs(project: project, on: req).flatMap { links in
+                    return project.user.get(on: req).map { user in
+                        return try DetailProjectResponse(project, links: links, labels: labels, user: user)
+                    }
                 }
             }
         }

@@ -48,6 +48,19 @@ extension ProjectController {
         let created: Date
         let links: [LinkResponse]?
         let labels: [LabelEnum]?
+        let user: UserResponse
+        let imagePath: String?
+        
+        init(_ project: Project, links: [LinkResponse], labels: [LabelEnum], user: User) throws {
+            self.id = try project.requireID()
+            self.name = project.title
+            self.description = project.description
+            self.created = project.created
+            self.user = try UserResponse(with: user)
+            self.labels = labels
+            self.links = links
+            self.imagePath = project.imagePath
+        }
     }
     
     
