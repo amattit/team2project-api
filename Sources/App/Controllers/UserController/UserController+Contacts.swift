@@ -19,7 +19,9 @@ extension UserController {
     func createContact(_ req: Request) throws -> Future<ContactResponse> {
         let user = try req.requireAuthenticated(User.self)
         return try req.content.decode(ContactCreateRequest.self).flatMap {
-            return Contact(title: $0.title, link: $0.link, ownerId: try user.requireID()).save(on: req).map {
+            let contact = Contact(title: $0.title, link: $0.link, ownerId: try user.requireID())
+            try contact.validate()
+            return contact.save(on: req).map {
                 return try ContactResponse(contact: $0)
             }
         }
@@ -32,6 +34,7 @@ extension UserController {
             return try req.content.decode(ContactResponse.self).flatMap { requsetData in
                 contact.title = requsetData.title
                 contact.link = requsetData.link
+                try contact.validate()
                 return contact.update(on: req).map { contact in
                     return try ContactResponse(contact: contact)
                 }

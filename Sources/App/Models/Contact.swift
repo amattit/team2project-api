@@ -52,3 +52,11 @@ extension Contact: Content { }
 
 /// Allows `Todo` to be used as a dynamic parameter in route definitions.
 extension Contact: Parameter { }
+
+extension Contact: Validatable {
+    static func validations() throws -> Validations<Contact> {
+        var validations = Validations(Contact.self)
+        try validations.add(\.link, .url)
+        return validations
+    }
+}
