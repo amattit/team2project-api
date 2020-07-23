@@ -8,16 +8,20 @@
 import Vapor
 
 extension ProjectController {
-    func addLinkToProject(_ req: Request) throws -> Future<HTTPStatus> {
+    func addLinkToProject(_ req: Request) throws -> Future<LinkResponse> {
         let user = try req.requireAuthenticated(User.self)
-        return try req.parameters.next(Project.self).flatMap { project -> Future<Void> in
+        return try req.parameters.next(Project.self).flatMap { project in
             guard try user.requireID() == project.ownerId else {
                 throw Abort(.forbidden)
             }
-            return try req.content.decode(AddLinkRequest.self).map { link in
-                return Link(title: link.title, link: link.link, ownerId: try user.requireID(), projectId: try project.requireID()).save(on: req)
+            return try req.content.decode(AddLinkRequest.self).flatMap { link in
+                let link = Link(title: link.title, link: link.link, ownerId: try user.requireID(), projectId: try project.requireID())
+                try link.validate()
+                return link.save(on: req).map { link in
+                    return LinkResponse(id: try link.requireID(), title: link.title, link: link.link)
+                }
             }
-        }.transform(to: .ok)
+        }
     }
     
     func deleteLink(_ req: Request) throws -> Future<HTTPStatus> {

@@ -63,3 +63,11 @@ extension Link: Content { }
 
 /// Allows `Todo` to be used as a dynamic parameter in route definitions.
 extension Link: Parameter { }
+
+extension Link: Validatable {
+    static func validations() throws -> Validations<Link> {
+        var validations = Validations(Link.self)
+        try validations.add(\.link, .url)
+        return validations
+    }
+}
