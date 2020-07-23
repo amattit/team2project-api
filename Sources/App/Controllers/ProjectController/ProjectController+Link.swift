@@ -35,7 +35,7 @@ extension ProjectController {
         }.transform(to: .ok)
     }
     
-    func updateLink(_ req: Request) throws -> Future<HTTPStatus> {
+    func updateLink(_ req: Request) throws -> Future<LinkResponse> {
         let user = try req.requireAuthenticated(User.self)
         let _ = try req.parameters.next(Project.self)
         return try req.parameters.next(Link.self).flatMap { link in
@@ -46,7 +46,10 @@ extension ProjectController {
             return try req.content.decode(UpdateLinkRequest.self).flatMap { t in
                 link.title = t.title
                 link.link = t.link
-                return link.update(on: req).transform(to: HTTPStatus.ok)
+                try link.validate()
+                return link.update(on: req).map { link in
+                    return LinkResponse(id: try link.requireID(), title: link.title, link: link.link)
+                }
             }
         }
     }
