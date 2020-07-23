@@ -9,7 +9,7 @@ final class ProjectController {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).map { user in
                     return try self.getLabels(for: project, on: req).map { labels in
-                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels)
+                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath)
                     }
                 }
             }.flatten(on: req)
@@ -23,7 +23,7 @@ final class ProjectController {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).map { user in
                     return try self.getLabels(for: project, on: req).map { labels in
-                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels)
+                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath)
                     }
                 }
             }.flatten(on: req)
@@ -36,7 +36,7 @@ final class ProjectController {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).map { user in
                     return try self.getLabels(for: project, on: req).map { labels in
-                        return ProjectListResponse(id: try project.requireID(), name: project.title, description: project.description, useremail: user.email, created: project.created, user: UserResponse(id: try user.requireID(), email: user.email), labels: labels)
+                        return ProjectListResponse(id: try project.requireID(), name: project.title, description: project.description, useremail: user.email, created: project.created, user: UserResponse(id: try user.requireID(), email: user.email), labels: labels, imagePath: project.imagePath)
                     }
                 }
             }.flatten(on: req)

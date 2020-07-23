@@ -50,4 +50,18 @@ public func routes(_ router: Router) throws {
     bearer.get("project", "label", use: projectController.getLabels)
     bearer.post("project", Project.parameter, "label", use: projectController.addLabelToProject)
     bearer.delete("project", Project.parameter, "label", use: projectController.removeLabelFromProject)
+    
+    //MARK: Vacancy
+    /// get         project/:id/vacancy - Список всех вакансий для проекта
+    bearer.get("project", Project.parameter, "vacancy", use: projectController.getProjectVacancy)
+    /// post       project/:id/vacancy - Создание вакансии
+    bearer.post("project", Project.parameter, "vacancy", use: projectController.createVacancy)
+    /// put         project/:id/vacancy/:id - Изменение вакансии
+    bearer.put("project", Project.parameter, "vacancy", Vacancy.parameter, use: projectController.updateVacancy)
+    /// delete    project/:id/vacancy/:id
+    bearer.delete("project", Project.parameter, "vacancy", Vacancy.parameter, use: projectController.deleteVacancy)
+    /// get vacancy -  все незанятые вакансии
+    bearer.get("vacancy", use: projectController.getAllVacancy)
+    
+    bearer.get("vacancy", "shareType", use: projectController.getShareType)
 }

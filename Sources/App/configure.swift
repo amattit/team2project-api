@@ -57,6 +57,9 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: Contact.self, database: .mysql)
     migrations.add(model: ContactEnum.self, database: .mysql)
     migrations.add(migration: ContactEnumDefaultData.self, database: .mysql)
+    migrations.add(model: Vacancy.self, database: .mysql)
+    migrations.add(model: Vacancy.ShareType.self, database: .mysql)
+    migrations.add(migration: ShareTypeDefaultData.self, database: .mysql)
     services.register(migrations)
 
 }

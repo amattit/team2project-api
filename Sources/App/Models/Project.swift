@@ -53,6 +53,12 @@ extension Project {
 }
 
 extension Project {
+    var vacancy: Children<Project, Vacancy> {
+        return children(\.projectId)
+    }
+}
+
+extension Project {
     var labels: Siblings<Project, LabelEnum, ProjectLabel> {
         return siblings()
     }

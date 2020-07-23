@@ -31,6 +31,7 @@ extension ProjectController {
         let created: Date
         let user: UserResponse?
         let labels: [LabelEnum]?
+        let imagePath: String?
     }
     
     struct CreateProjectResponse: Content {
