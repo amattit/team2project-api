@@ -46,6 +46,10 @@ extension UserController {
                 user.location = location
             }
             
+            if let role = userData.role {
+                user.role = role
+            }
+            
             try user.validate()
             return user.save(on: req).map {
                 return try UserResponse(with: $0)

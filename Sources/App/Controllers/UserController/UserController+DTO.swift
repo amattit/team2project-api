@@ -57,7 +57,9 @@ struct UserResponse: Content {
     
     var location: String?
     
-    init(id: Int, email: String, name: String? = nil, imagePath: String? = nil, about: String? = nil, location: String? = nil) {
+    var role: String?
+    
+    init(id: Int, email: String, name: String? = nil, imagePath: String? = nil, about: String? = nil, location: String? = nil, role: String? = nil) {
         self.id = id
         self.email = email
         self.name = name
@@ -73,6 +75,7 @@ struct UserResponse: Content {
         self.imagePath = user.imagePath
         self.about = user.about
         self.location = user.location
+        self.role = user.role
     }
     
     init(with user: User, contacts: [Contact]) throws {
@@ -95,4 +98,6 @@ struct UpdateUserRequest: Content {
     var about: String?
     
     var location: String?
+    
+    var role: String?
 }
