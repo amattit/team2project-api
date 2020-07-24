@@ -52,4 +52,8 @@ extension UserController {
             }
         }
     }
+    
+    func getAllUsers(_ req: Request) throws -> Future<[User]> {
+        return User.query(on: req).all()
+    }
 }

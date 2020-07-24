@@ -15,7 +15,8 @@ public func routes(_ router: Router) throws {
     basic.post("login", use: userController.login)
     bearer.get("user", use: userController.getSelf)
     bearer.put("user", use: userController.updateUser)
-    bearer.get("api", "v1", "user", User.parameter, use: userController.getUser)
+    router.get("api", "v1", "user", User.parameter, use: userController.getUser)
+    router.get("api", "v1", "users", User.parameter, use: userController.getAllUsers)
     
     //MARK: Contacts
     /// get      /user/contact - все контакты + добавить в ответ user  -> getUserContacts
