@@ -10,13 +10,13 @@ public func routes(_ router: Router) throws {
     let v1 = router.grouped("api", "v1")
     let basic = v1.grouped(User.basicAuthMiddleware(using: BCryptDigest()))
     let bearer = v1.grouped(User.tokenAuthMiddleware())
-    // MARK: User
+    // MARK: User - Done
     router.post("api", "v1", "signup", use: userController.create)
     basic.post("login", use: userController.login)
     bearer.get("user", use: userController.getSelf)
     bearer.put("user", use: userController.updateUser)
     router.get("api", "v1", "user", User.parameter, use: userController.getUser)
-    router.get("api", "v1", "users", User.parameter, use: userController.getAllUsers)
+    router.get("api", "v1", "users", use: userController.getAllUsers)
     
     //MARK: Contacts
     /// get      /user/contact - все контакты + добавить в ответ user  -> getUserContacts
@@ -26,33 +26,33 @@ public func routes(_ router: Router) throws {
     /// post     /user/contact - создание контакта -> userController.createContact
     bearer.post("user", "contact", use: userController.createContact)
     /// put      /user/contact/{id} - изменение контакта -> userController.updateContact
-    bearer.put("user", "contact", Contact.parameter, use: userController.updateContact)
+    bearer.put("user", "contact", Contact.parameter, use: userController.updateContact) // поправить DTO
     /// delete   /user/contact/{id} - удаление контакта -> userController.deleteContact
     bearer.delete("user", "contact", Contact.parameter, use: userController.deleteContact)
-    // MARK: projects
     
-    router.get("api", "v1", "project", use: projectController.allProjects)
-    bearer.get("project", "my", use: projectController.allMyPublickProjects)
-    bearer.post("project", use: projectController.createProject)
-    bearer.delete("project", Project.parameter, use: projectController.deleteProject)
-    bearer.put("project", Project.parameter, use: projectController.updateProject)
-    bearer.get("project", Project.parameter, use: projectController.projectDetail)
-    bearer.put("project", Project.parameter, "public", use: projectController.publicateProject)
-    bearer.put("project", Project.parameter, "checkout", use: projectController.checkoutProject)
-    bearer.get("project","checkout", use: projectController.checkoutProjects)
+    // MARK: projects
+    router.get("api", "v1", "project", use: projectController.allProjects) // - done
+    bearer.get("project", "my", use: projectController.allMyPublickProjects) // - done
+    bearer.post("project", use: projectController.createProject) // - done
+    bearer.delete("project", Project.parameter, use: projectController.deleteProject) // - done
+    bearer.put("project", Project.parameter, use: projectController.updateProject) // - done
+    bearer.get("project", Project.parameter, use: projectController.projectDetail) // - done
+    bearer.put("project", Project.parameter, "public", use: projectController.publicateProject) // - done
+    bearer.put("project", Project.parameter, "checkout", use: projectController.checkoutProject) // - done
+//    bearer.get("project","checkout", use: projectController.checkoutProjects)
     
     //MARK: links
-    bearer.get("project", Project.parameter, "link", use: projectController.getLinksForProject)
-    bearer.post("project", Project.parameter, "link", use: projectController.addLinkToProject)
-    bearer.delete("project", Project.parameter, "link", Link.parameter, use: projectController.deleteLink)
-    bearer.put("project", Project.parameter, "link", Link.parameter, use: projectController.updateLink)
+    bearer.get("project", Project.parameter, "link", use: projectController.getLinksForProject) // - done
+    bearer.post("project", Project.parameter, "link", use: projectController.addLinkToProject) // - done
+    bearer.delete("project", Project.parameter, "link", Link.parameter, use: projectController.deleteLink) // - done
+    bearer.put("project", Project.parameter, "link", Link.parameter, use: projectController.updateLink) // - done
     
     //MARK: Labels
     bearer.get("project", "label", use: projectController.getLabels)
-    bearer.post("project", Project.parameter, "label", use: projectController.addLabelToProject)
-    bearer.delete("project", Project.parameter, "label", use: projectController.removeLabelFromProject)
+    bearer.post("project", Project.parameter, "label", use: projectController.addLabelToProject) // - done
+    bearer.delete("project", Project.parameter, "label", use: projectController.removeLabelFromProject) //- done
     
-    //MARK: Vacancy
+    //MARK: Vacancy done
     /// get         project/:id/vacancy - Список всех вакансий для проекта
     bearer.get("project", Project.parameter, "vacancy", use: projectController.getProjectVacancy)
     /// post       project/:id/vacancy - Создание вакансии
