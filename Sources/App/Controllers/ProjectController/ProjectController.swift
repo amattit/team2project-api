@@ -47,8 +47,10 @@ final class ProjectController {
         return try req.parameters.next(Project.self).flatMap { project in
             return try self.getLabels(for: project, on: req).flatMap { labels in
                 return try self.getLinksRs(project: project, on: req).flatMap { links in
-                    return project.user.get(on: req).map { user in
-                        return try DetailProjectResponse(project, links: links, labels: labels, user: user)
+                    return project.user.get(on: req).flatMap { user in
+                        return try project.vacancy.query(on: req).all().map { vacancy in
+                            return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy)
+                        }
                     }
                 }
             }

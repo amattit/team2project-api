@@ -51,8 +51,9 @@ extension ProjectController {
         let labels: [LabelEnum]?
         let user: UserResponse
         let imagePath: String?
+        let vacancy: [VacancyResponse]?
         
-        init(_ project: Project, links: [LinkResponse], labels: [LabelEnum], user: User) throws {
+        init(_ project: Project, links: [LinkResponse], labels: [LabelEnum], user: User, vacancy: [Vacancy]? = nil) throws {
             self.id = try project.requireID()
             self.name = project.title
             self.description = project.description
@@ -61,6 +62,7 @@ extension ProjectController {
             self.labels = labels
             self.links = links
             self.imagePath = project.imagePath
+            self.vacancy = try vacancy?.compactMap { try VacancyResponse(with: $0, contact: user) }
         }
     }
     
