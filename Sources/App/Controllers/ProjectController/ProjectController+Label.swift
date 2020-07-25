@@ -17,7 +17,7 @@ extension ProjectController {
         return try req.parameters.next(Project.self).flatMap { project in
             return try project.labels.query(on: req).count().flatMap { count in
                 guard try user.requireID() == project.ownerId else {
-                    throw Abort(.forbidden, reason: "Только пользователь создавший проект может внести изменения в лэйблы")
+                    throw Abort(.forbidden, reason: "Только пользователь создавший проект может внести изменения в метки")
                 }
                 guard count < 2 else {
                     throw Abort(.forbidden, reason: "В данный момент можно добавить только 2 метки")
@@ -29,7 +29,7 @@ extension ProjectController {
                             if !isAttached {
                                 return project.labels.attach(label, on: req).transform(to: .ok)
                             }
-                            throw Abort(HTTPStatus.found, reason: "Лэйбл уже был добавлен к проекту")
+                            throw Abort(HTTPStatus.found, reason: "Метка уже была добавлена к проекту")
                         }
                     }
                 }
@@ -41,7 +41,7 @@ extension ProjectController {
         let user = try req.requireAuthenticated(User.self)
         return try req.parameters.next(Project.self).flatMap { project in
             guard try user.requireID() == project.ownerId else {
-                throw Abort(.forbidden, reason: "Только пользователь создавший проект может внести изменения в лэйблы")
+                throw Abort(.forbidden, reason: "Только пользователь создавший проект может внести изменения в метки")
             }
             return try req.content.decode(AddLabelToProject.self).map { labelDto in
                 return try self.getLabelById(labelDto.labelId, on: req).map { label in
@@ -53,7 +53,7 @@ extension ProjectController {
     
     /// don use
     internal func getLabelById(_ id: Int, on req: Request) throws -> Future<LabelEnum> {
-        return LabelEnum.query(on: req).filter(\.id, .equal, id).first().unwrap(or: Abort(.notFound, reason: "Label not found"))
+        return LabelEnum.query(on: req).filter(\.id, .equal, id).first().unwrap(or: Abort(.notFound, reason: "Метка не найдена"))
     }
     
     /// don use

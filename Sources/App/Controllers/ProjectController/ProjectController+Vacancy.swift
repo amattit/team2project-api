@@ -37,6 +37,9 @@ extension ProjectController {
     func createVacancy(_ req: Request) throws -> Future<VacancyResponse> {
         let user = try req.requireAuthenticated(User.self)
         return try req.parameters.next(Project.self).flatMap { project in
+            guard try user.requireID() == project.ownerId else {
+                throw Abort(.forbidden, reason: "Только автор проекта может публиковать вакансии")
+            }
             return try req.content.decode(CreateVacancyRequest.self).flatMap { request in
                 return Vacancy.ShareType.query(on: req).all().flatMap { shareTypes in
                     if shareTypes.contains(where: { $0.title == request.shareType }) {

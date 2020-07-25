@@ -12,7 +12,7 @@ extension ProjectController {
         let user = try req.requireAuthenticated(User.self)
         return try req.parameters.next(Project.self).flatMap { project in
             guard try user.requireID() == project.ownerId else {
-                throw Abort(.forbidden)
+                throw Abort(.forbidden, reason: "Только автор проекта может добавлять ссылки")
             }
             return try req.content.decode(AddLinkRequest.self).flatMap { link in
                 let link = Link(title: link.title, link: link.link, ownerId: try user.requireID(), projectId: try project.requireID())
