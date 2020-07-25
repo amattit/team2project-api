@@ -1,12 +1,11 @@
 import Authentication
-import FluentSQLite
 import Vapor
-import FluentMySQL
+import FluentPostgreSQL
 
 /// Called before your application initializes.
 public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
     // Register providers first
-    try services.register(FluentSQLiteProvider())
+    try services.register(FluentPostgreSQLProvider())
 //    try services.register(AuthenticationProvider())
     try services.register(AuthenticationProvider())
 
@@ -14,7 +13,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     let router = EngineRouter.default()
     try routes(router)
     services.register(router, as: Router.self)
-    try services.register(MySQLProvider())
+//    try services.register(PostgreSQLProvider())
 
     // Register middleware
     var middlewares = MiddlewareConfig() // Create _empty_ middleware config
@@ -34,12 +33,12 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     // Configure a SQLite database
     
 //    let sqlite = try SQLiteDatabase(storage: .memory)
-    let mySQL = MySQLDatabase(config: MySQLDatabaseConfig(hostname: "team2project.tk", port: 3306, username: "team2project_user", password: "10$*nv5&XC6v7i4c^vB", database: "team2project", capabilities: .default, characterSet: .utf8mb4_unicode_ci, transport: .cleartext))
+    let psql = PostgreSQLDatabase(config: PostgreSQLDatabaseConfig(url: Environment.get("DATABASE_URL")!,transport: .unverifiedTLS)!)
 
     // Register the configured SQLite database to the database config.
     var databases = DatabasesConfig()
 //    databases.enableLogging(on: .mysql)
-    databases.add(database: mySQL, as: .mysql)
+    databases.add(database: psql, as: .psql)
     services.register(databases)
 
     
@@ -47,19 +46,19 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     /// Configure migrations
     var migrations = MigrationConfig()
 //
-    migrations.add(model: User.self, database: .mysql)
-    migrations.add(model: UserToken.self, database: .mysql)
-    migrations.add(model: Project.self, database: .mysql)
-    migrations.add(model: Link.self, database: .mysql)
-    migrations.add(model: LabelEnum.self, database: .mysql)
-    migrations.add(model: ProjectLabel.self, database: .mysql)
-    migrations.add(migration: LabelEnumDefaultData.self, database: .mysql)
-    migrations.add(model: Contact.self, database: .mysql)
-    migrations.add(model: ContactEnum.self, database: .mysql)
-    migrations.add(migration: ContactEnumDefaultData.self, database: .mysql)
-    migrations.add(model: Vacancy.self, database: .mysql)
-    migrations.add(model: Vacancy.ShareType.self, database: .mysql)
-    migrations.add(migration: ShareTypeDefaultData.self, database: .mysql)
+    migrations.add(model: User.self, database: .psql)
+    migrations.add(model: UserToken.self, database: .psql)
+    migrations.add(model: Project.self, database: .psql)
+    migrations.add(model: Link.self, database: .psql)
+    migrations.add(model: LabelEnum.self, database: .psql)
+    migrations.add(model: ProjectLabel.self, database: .psql)
+    migrations.add(migration: LabelEnumDefaultData.self, database: .psql)
+    migrations.add(model: Contact.self, database: .psql)
+    migrations.add(model: ContactEnum.self, database: .psql)
+    migrations.add(migration: ContactEnumDefaultData.self, database: .psql)
+    migrations.add(model: Vacancy.self, database: .psql)
+    migrations.add(model: Vacancy.ShareType.self, database: .psql)
+    migrations.add(migration: ShareTypeDefaultData.self, database: .psql)
     services.register(migrations)
 
 }

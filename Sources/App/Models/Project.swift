@@ -1,8 +1,8 @@
-import FluentMySQL
+import FluentPostgreSQL
 import Vapor
 
 /// A single entry of a todo list.
-final class Project: MySQLModel {
+final class Project: PostgreSQLModel {
     
     /// The unique identifier for this `project`.
     var id: Int?
@@ -66,12 +66,12 @@ extension Project {
 
 
 /// Allows `Todo` to be used as a Fluent migration.
-extension Project: MySQLMigration {
-    static func prepare(on connection: MySQLConnection) -> EventLoopFuture<Void> {
-        return MySQLDatabase.create(Project.self, on: connection) { (builder) in
+extension Project: PostgreSQLMigration {
+    static func prepare(on connection: PostgreSQLConnection) -> EventLoopFuture<Void> {
+        return PostgreSQLDatabase.create(Project.self, on: connection) { (builder) in
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.title)
-            builder.field(for: \.description, type: .varchar(3000, characterSet: nil, collate: nil))
+            builder.field(for: \.description, type: .varchar(3000))
             builder.field(for: \.created)
             builder.field(for: \.updated)
             builder.field(for: \.ownerId)

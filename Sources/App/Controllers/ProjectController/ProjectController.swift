@@ -1,5 +1,4 @@
 import Vapor
-import FluentSQLite
 
 /// Simple todo-list controller.
 final class ProjectController {

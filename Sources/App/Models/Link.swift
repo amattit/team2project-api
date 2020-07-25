@@ -5,10 +5,10 @@
 //  Created by 16997598 on 14.07.2020.
 //
 
-import FluentMySQL
+import FluentPostgreSQL
 import Vapor
 
-final class Link: MySQLModel {
+final class Link: PostgreSQLModel {
     var id: Int?
     var title: String
     var link: String
@@ -42,9 +42,9 @@ extension Link {
 }
 
 /// Allows `Todo` to be used as a Fluent migration.
-extension Link: MySQLMigration {
-    static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
-        return MySQLDatabase.create(Link.self, on: conn) { builder in
+extension Link: PostgreSQLMigration {
+    static func prepare(on conn: PostgreSQLConnection) -> EventLoopFuture<Void> {
+        return PostgreSQLDatabase.create(Link.self, on: conn) { builder in
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.title)
             builder.field(for: \.link)

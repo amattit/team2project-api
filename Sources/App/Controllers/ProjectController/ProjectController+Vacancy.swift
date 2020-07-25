@@ -104,7 +104,7 @@ extension ProjectController {
     }
     
     func getShareType(_ req: Request) throws -> Future<[Vacancy.ShareType]> {
-        return try Vacancy.ShareType.query(on: req).all()
+        return Vacancy.ShareType.query(on: req).all()
     }
     
 }

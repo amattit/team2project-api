@@ -1,10 +1,9 @@
 import Authentication
-import FluentSQLite
 import Vapor
-import FluentMySQL
+import FluentPostgreSQL
 
 /// A registered user, capable of owning todo items.
-final class User: MySQLModel {
+final class User: PostgreSQLModel {
     /// User's unique identifier.
     /// Can be `nil` if the user has not been saved yet.
     var id: Int?
@@ -75,9 +74,9 @@ extension User: Content { }
 /// Allows `User` to be used as a dynamic parameter in route definitions.
 extension User: Parameter { }
 
-extension User: MySQLMigration {
-    static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
-        return MySQLDatabase.create(User.self, on: conn) { (builder) in
+extension User: PostgreSQLMigration {
+    static func prepare(on conn: PostgreSQLConnection) -> EventLoopFuture<Void> {
+        return PostgreSQLDatabase.create(User.self, on: conn) { (builder) in
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.name)
             builder.field(for: \.email)

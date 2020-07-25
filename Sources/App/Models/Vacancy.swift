@@ -6,9 +6,9 @@
 //
 
 import Vapor
-import FluentMySQL
+import FluentPostgreSQL
 
-final class Vacancy: MySQLModel {
+final class Vacancy: PostgreSQLModel {
     var id: Int?
     
     /// Название вакансии
@@ -60,9 +60,9 @@ extension Vacancy {
     }
 }
 
-extension Vacancy: MySQLMigration {
-    static func prepare(on connection: MySQLConnection) -> EventLoopFuture<Void> {
-        return MySQLDatabase.create(Vacancy.self, on: connection) { builder in
+extension Vacancy: PostgreSQLMigration {
+    static func prepare(on connection: PostgreSQLConnection) -> EventLoopFuture<Void> {
+        return PostgreSQLDatabase.create(Vacancy.self, on: connection) { builder in
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.title)
             builder.field(for: \.shareType)
@@ -72,8 +72,8 @@ extension Vacancy: MySQLMigration {
             builder.field(for: \.projectId)
             builder.field(for: \.ownerId)
             builder.field(for: \.isVacant)
-            builder.field(for: \.aboutVacancy, type: .varchar(3000, characterSet: nil, collate: nil))
-            builder.field(for: \.aboutFeatures, type: .varchar(3000, characterSet: nil, collate: nil))
+            builder.field(for: \.aboutVacancy, type: .varchar(3000))
+            builder.field(for: \.aboutFeatures, type: .varchar(3000))
             builder.reference(from: \.projectId, to: \Project.id)
             builder.reference(from: \.ownerId, to: \User.id)
         }
@@ -81,7 +81,7 @@ extension Vacancy: MySQLMigration {
 }
 
 extension Vacancy {
-    final class ShareType: MySQLModel {
+    final class ShareType: PostgreSQLModel {
         var id: Int?
         var title: String
         
@@ -93,21 +93,21 @@ extension Vacancy {
 
 extension Vacancy.ShareType: Content {}
 
-extension Vacancy.ShareType: MySQLMigration {
-    static func prepare(on connection: MySQLConnection) -> EventLoopFuture<Void> {
-        return MySQLDatabase.create(Vacancy.ShareType.self, on: connection) { builder in
+extension Vacancy.ShareType: PostgreSQLMigration {
+    static func prepare(on connection: PostgreSQLConnection) -> EventLoopFuture<Void> {
+        return PostgreSQLDatabase.create(Vacancy.ShareType.self, on: connection) { builder in
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.title)
         }
     }
 }
 
-struct ShareTypeDefaultData: MySQLMigration {
-    static func revert(on conn: MySQLConnection) -> EventLoopFuture<Void> {
+struct ShareTypeDefaultData: PostgreSQLMigration {
+    static func revert(on conn: PostgreSQLConnection) -> EventLoopFuture<Void> {
         return conn.future(())
     }
     
-    static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
+    static func prepare(on conn: PostgreSQLConnection) -> EventLoopFuture<Void> {
         let _ = Vacancy.ShareType(title: "Share").save(on: conn).transform(to: ())
         let _ = Vacancy.ShareType(title: "PartTime").save(on: conn).transform(to: ())
         return Vacancy.ShareType(title: "FullTime").save(on: conn).transform(to: ())

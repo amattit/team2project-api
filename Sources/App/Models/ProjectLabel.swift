@@ -6,9 +6,9 @@
 //
 
 import Vapor
-import FluentMySQL
+import FluentPostgreSQL
 
-struct ProjectLabel: MySQLPivot {
+struct ProjectLabel: PostgreSQLPivot {
     
     typealias Left = Project
     typealias Right = LabelEnum
@@ -22,9 +22,9 @@ struct ProjectLabel: MySQLPivot {
     
 }
 
-extension ProjectLabel: MySQLMigration {
-    static func prepare(on connection: MySQLConnection) -> EventLoopFuture<Void> {
-        return MySQLDatabase.create(ProjectLabel.self, on: connection) { builder in
+extension ProjectLabel: PostgreSQLMigration {
+    static func prepare(on connection: PostgreSQLConnection) -> EventLoopFuture<Void> {
+        return PostgreSQLDatabase.create(ProjectLabel.self, on: connection) { builder in
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.projectId)
             builder.field(for: \.labelId)

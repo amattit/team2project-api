@@ -5,10 +5,10 @@
 //  Created by 16997598 on 16.07.2020.
 //
 
-import FluentMySQL
+import FluentPostgreSQL
 import Vapor
 
-final class LabelEnum: MySQLModel {
+final class LabelEnum: PostgreSQLModel {
     var id: Int?
     let title: String
     
@@ -20,9 +20,9 @@ final class LabelEnum: MySQLModel {
 
 extension LabelEnum: Parameter {}
 
-extension LabelEnum: MySQLMigration {
-    static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
-        return MySQLDatabase.create(LabelEnum.self, on: conn) { builder in
+extension LabelEnum: PostgreSQLMigration {
+    static func prepare(on conn: PostgreSQLConnection) -> EventLoopFuture<Void> {
+        return PostgreSQLDatabase.create(LabelEnum.self, on: conn) { builder in
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.title)
         }
@@ -37,12 +37,12 @@ extension LabelEnum {
     }
 }
 
-struct LabelEnumDefaultData: MySQLMigration {
-    static func revert(on conn: MySQLConnection) -> EventLoopFuture<Void> {
+struct LabelEnumDefaultData: PostgreSQLMigration {
+    static func revert(on conn: PostgreSQLConnection) -> EventLoopFuture<Void> {
         return conn.future(())
     }
     
-    static func prepare(on conn: MySQLConnection) -> EventLoopFuture<Void> {
+    static func prepare(on conn: PostgreSQLConnection) -> EventLoopFuture<Void> {
         let _ = LabelEnum(title: "делаем mvp").save(on: conn).transform(to: ())
         let _ = LabelEnum(title: "mvp готов").save(on: conn).transform(to: ())
         let _ = LabelEnum(title: "есть идея").save(on: conn).transform(to: ())

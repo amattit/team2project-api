@@ -1,12 +1,12 @@
 import Authentication
 import Crypto
 import Vapor
-import FluentMySQL
+import FluentPostgreSQL
 
 /// An ephermal authentication token that identifies a registered user.
-final class UserToken: MySQLModel {
+final class UserToken: PostgreSQLModel {
     /// Creates a new `UserToken` for a given user.
-//    typealias Database = MySQLDatabase
+//    typealias Database = PostgreSQLDatabase
     static func create(userID: User.ID) throws -> UserToken {
         // generate a random 128-bit, base64-encoded string.
         let string = try CryptoRandom().generateData(count: 16).base64EncodedString()
@@ -62,8 +62,8 @@ extension UserToken: Token {
 /// Allows `UserToken` to be used as a Fluent migration.
 extension UserToken: Migration {
     /// See `Migration`.
-    static func prepare(on conn: MySQLConnection) -> Future<Void> {
-        return MySQLDatabase.create(UserToken.self, on: conn) { builder in
+    static func prepare(on conn: PostgreSQLConnection) -> Future<Void> {
+        return PostgreSQLDatabase.create(UserToken.self, on: conn) { builder in
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.string)
             builder.field(for: \.userID)
@@ -81,4 +81,4 @@ extension UserToken: Content { }
 /// Allows `UserToken` to be used as a dynamic parameter in route definitions.
 extension UserToken: Parameter { }
 
-extension UserToken: MySQLMigration { }
+extension UserToken: PostgreSQLMigration { }
