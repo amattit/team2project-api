@@ -51,6 +51,33 @@ extension ProjectController {
         }
     }
     
+    func updateLabels(_ req: Request) throws -> Future<HTTPStatus> {
+        let user = try req.requireAuthenticated(User.self)
+        return try req.parameters.next(Project.self).flatMap { project in
+            guard try user.requireID() == project.ownerId else {
+                throw Abort(.forbidden, reason: "Толькк владелец проекта может вносить мзменения в состав меток")
+            }
+            let _ = try project.labels.query(on: req).all().map {
+                if !$0.isEmpty {
+                    let _ = $0.map {
+                        project.labels.detach($0, on: req)
+                    }
+                }
+            }
+            return try req.content.decode([AddLabelToProject].self).flatMap { enums in
+                guard enums.count < 3 else {
+                    throw Abort(.badRequest, reason: "В данный момент можно добавить только 2 метки")
+                }
+                let _ = try enums.compactMap {
+                    return try self.getLabelById($0.labelId, on: req).map { label in
+                        return project.labels.attach(label, on: req)
+                    }
+                }
+                return try self.getLabels(for: project, on: req).transform(to: .ok)
+            }
+        }
+    }
+    
     /// don use
     internal func getLabelById(_ id: Int, on req: Request) throws -> Future<LabelEnum> {
         return LabelEnum.query(on: req).filter(\.id, .equal, id).first().unwrap(or: Abort(.notFound, reason: "Метка не найдена"))

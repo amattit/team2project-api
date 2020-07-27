@@ -51,6 +51,7 @@ public func routes(_ router: Router) throws {
     bearer.get("project", "label", use: projectController.getLabels)
     bearer.post("project", Project.parameter, "label", use: projectController.addLabelToProject) // - done
     bearer.delete("project", Project.parameter, "label", use: projectController.removeLabelFromProject) //- done
+    bearer.put("project", Project.parameter, "label", use: projectController.updateLabels)
     
     //MARK: Vacancy done
     /// get         project/:id/vacancy - Список всех вакансий для проекта
