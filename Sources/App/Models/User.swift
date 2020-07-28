@@ -61,6 +61,17 @@ extension User {
     }
 }
 
+extension User {
+    var favoritesProjects: Siblings<User, Project, UserProject> {
+        return siblings()
+    }
+}
+
+extension User {
+    var favoriteUsers: Children<User, FavoriteUser> {
+        return children(\.ownerId)
+    }
+}
 
 /// Allows users to be verified by bearer / token auth middleware.
 extension User: TokenAuthenticatable {

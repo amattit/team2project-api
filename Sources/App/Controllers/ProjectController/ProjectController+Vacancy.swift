@@ -140,7 +140,7 @@ struct VacancyResponse: Content {
     let aboutVacancy: String?
     let aboutFeatures: String?
     let contact: UserResponse
-    let project: ProjectController.ProjectListResponse?
+    let project: ProjectController.VacancyProjectListResponse?
     
     init(with vacancy: Vacancy, contact: User, project: Project? = nil) throws {
         self.id = try vacancy.requireID()
@@ -151,7 +151,7 @@ struct VacancyResponse: Content {
         self.aboutFeatures = vacancy.aboutFeatures
         self.contact = try UserResponse(with: contact)
         if  let project = project {
-            self.project = ProjectController.ProjectListResponse(id: try project.requireID(), name: project.title, description: project.description, useremail: "", created: project.created, user: nil, labels: nil, imagePath: project.imagePath)
+            self.project = ProjectController.VacancyProjectListResponse(id: try project.requireID(), name: project.title, description: project.description, useremail: "", created: project.created, user: nil, labels: nil, imagePath: project.imagePath)
         } else {
             self.project = nil
         }

@@ -64,6 +64,12 @@ extension Project {
     }
 }
 
+extension Project {
+    var inFavorite: Siblings<Project, User, UserProject> {
+        return siblings()
+    }
+}
+
 
 /// Allows `Todo` to be used as a Fluent migration.
 extension Project: PostgreSQLMigration {

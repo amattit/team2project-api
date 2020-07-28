@@ -59,6 +59,8 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: Vacancy.self, database: .psql)
     migrations.add(model: Vacancy.ShareType.self, database: .psql)
     migrations.add(migration: ShareTypeDefaultData.self, database: .psql)
+    migrations.add(model: UserProject.self, database: .psql)
+    migrations.add(model: FavoriteUser.self, database: .psql)
     services.register(migrations)
 
 }

@@ -19,15 +19,10 @@ public func routes(_ router: Router) throws {
     router.get("api", "v1", "users", use: userController.getAllUsers)
     
     //MARK: Contacts
-    /// get      /user/contact - все контакты + добавить в ответ user  -> getUserContacts
     bearer.get("user", "contact", use: userController.getUserContacts)
-    /// get      /user/contactType - справочник видов контактов для предзаполнения -> userController.getContactsEnum
     bearer.get("user", "contactType", use: userController.getContactsEnum)
-    /// post     /user/contact - создание контакта -> userController.createContact
     bearer.post("user", "contact", use: userController.createContact)
-    /// put      /user/contact/{id} - изменение контакта -> userController.updateContact
     bearer.put("user", "contact", Contact.parameter, use: userController.updateContact) // поправить DTO
-    /// delete   /user/contact/{id} - удаление контакта -> userController.deleteContact
     bearer.delete("user", "contact", Contact.parameter, use: userController.deleteContact)
     
     // MARK: projects
@@ -39,7 +34,6 @@ public func routes(_ router: Router) throws {
     bearer.get("project", Project.parameter, use: projectController.projectDetail) // - done
     bearer.put("project", Project.parameter, "public", use: projectController.publicateProject) // - done
     bearer.put("project", Project.parameter, "checkout", use: projectController.checkoutProject) // - done
-//    bearer.get("project","checkout", use: projectController.checkoutProjects)
     
     //MARK: links
     bearer.get("project", Project.parameter, "link", use: projectController.getLinksForProject) // - done
@@ -54,16 +48,21 @@ public func routes(_ router: Router) throws {
     bearer.put("project", Project.parameter, "label", use: projectController.updateLabels)
     
     //MARK: Vacancy done
-    /// get         project/:id/vacancy - Список всех вакансий для проекта
     bearer.get("project", Project.parameter, "vacancy", use: projectController.getProjectVacancy)
-    /// post       project/:id/vacancy - Создание вакансии
     bearer.post("project", Project.parameter, "vacancy", use: projectController.createVacancy)
-    /// put         project/:id/vacancy/:id - Изменение вакансии
     bearer.put("project", Project.parameter, "vacancy", Vacancy.parameter, use: projectController.updateVacancy)
-    /// delete    project/:id/vacancy/:id
     bearer.delete("project", Project.parameter, "vacancy", Vacancy.parameter, use: projectController.deleteVacancy)
-    /// get vacancy -  все незанятые вакансии
     bearer.get("vacancy", use: projectController.getAllVacancy)
-    
     bearer.get("vacancy", "shareType", use: projectController.getShareType)
+    
+    //MARK: Favorites
+    bearer.get("user", "favorites", use: projectController.getFavorites)
+    bearer.get("user", "favorites", "user", use: projectController.getFavoriteUsers)
+    bearer.get("user", "favorites", "project", use: projectController.getFavoriteProjects)
+    
+    bearer.post("user", "favorites", "user", User.parameter, use: projectController.setFavoriteUser)
+    bearer.post("user", "favorites", "project", Project.parameter,use: projectController.setFavoriteProject)
+    
+    bearer.delete("user", "favorites", "user", User.parameter, use: projectController.deleteFavoriteUser)
+    bearer.delete("user", "favorites", "project", Project.parameter,use: projectController.deleteFavoriteProject)
 }

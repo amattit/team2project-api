@@ -29,6 +29,17 @@ extension ProjectController {
         let description: String
         let useremail: String
         let created: Date
+        let user: UserResponse
+        let labels: [LabelEnum]?
+        let imagePath: String?
+    }
+    
+    struct VacancyProjectListResponse: Content {
+        let id: Int
+        let name: String
+        let description: String
+        let useremail: String
+        let created: Date
         let user: UserResponse?
         let labels: [LabelEnum]?
         let imagePath: String?
@@ -39,7 +50,7 @@ extension ProjectController {
         let name: String
         let description: String
         let created: Date
-        let user: UserResponse?
+        let user: UserResponse
     }
     
     struct DetailProjectResponse: Content {
