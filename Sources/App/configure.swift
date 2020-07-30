@@ -37,7 +37,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
 
     
 
-    let poolConfig = DatabaseConnectionPoolConfig(maxConnections: 10)
+    let poolConfig = DatabaseConnectionPoolConfig(maxConnections: 2)
     services.register(poolConfig)
     // Register the configured SQLite database to the database config.
     var databases = DatabasesConfig()
