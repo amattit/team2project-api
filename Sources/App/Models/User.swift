@@ -110,3 +110,15 @@ extension User: Validatable {
         return validations
     }
 }
+
+struct UserEmailUnicMigration: PostgreSQLMigration {
+    static func revert(on conn: PostgreSQLConnection) -> EventLoopFuture<Void> {
+        return conn.future(())
+    }
+    
+    static func prepare(on conn: PostgreSQLConnection) -> EventLoopFuture<Void> {
+        return PostgreSQLDatabase.update(User.self, on: conn) { (builder) in
+            builder.unique(on: \.email)
+        }
+    }
+}
