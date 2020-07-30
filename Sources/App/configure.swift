@@ -31,14 +31,19 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     services.register(middlewares)
 
     // Configure a SQLite database
-    
+    let databaseConfig = PostgreSQLDatabaseConfig(url: Environment.get("DATABASE_URL")!,transport: .unverifiedTLS)!
 //    let sqlite = try SQLiteDatabase(storage: .memory)
-    let psql = PostgreSQLDatabase(config: PostgreSQLDatabaseConfig(url: Environment.get("DATABASE_URL")!,transport: .unverifiedTLS)!)
+    let psql = PostgreSQLDatabase(config: databaseConfig)
 
+    
+
+    let poolConfig = DatabaseConnectionPoolConfig(maxConnections: 10)
+    services.register(poolConfig)
     // Register the configured SQLite database to the database config.
     var databases = DatabasesConfig()
 //    databases.enableLogging(on: .mysql)
     databases.add(database: psql, as: .psql)
+    
     services.register(databases)
 
     
