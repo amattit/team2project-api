@@ -44,11 +44,24 @@ final class ProjectController {
     
     func projectDetail(_ req: Request) throws -> Future<DetailProjectResponse> {
         return try req.parameters.next(Project.self).flatMap { project in
-            return try self.getLabels(for: project, on: req).flatMap { labels in
-                return try self.getLinksRs(project: project, on: req).flatMap { links in
-                    return project.user.get(on: req).flatMap { user in
-                        return try project.vacancy.query(on: req).all().map { vacancy in
-                            return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy)
+            if project.isPublished == 0 {
+                let _ = try req.requireAuthenticated(User.self)
+                return try self.getLabels(for: project, on: req).flatMap { labels in
+                    return try self.getLinksRs(project: project, on: req).flatMap { links in
+                        return project.user.get(on: req).flatMap { user in
+                            return try project.vacancy.query(on: req).all().map { vacancy in
+                                return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy)
+                            }
+                        }
+                    }
+                }
+            } else {
+                return try self.getLabels(for: project, on: req).flatMap { labels in
+                    return try self.getLinksRs(project: project, on: req).flatMap { links in
+                        return project.user.get(on: req).flatMap { user in
+                            return try project.vacancy.query(on: req).all().map { vacancy in
+                                return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy)
+                            }
                         }
                     }
                 }
