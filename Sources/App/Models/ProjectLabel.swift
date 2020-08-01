@@ -28,8 +28,8 @@ extension ProjectLabel: PostgreSQLMigration {
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.projectId)
             builder.field(for: \.labelId)
-            builder.reference(from: \.projectId, to: \Project.id)
-            builder.reference(from: \.labelId, to: \LabelEnum.id)
+            builder.reference(from: \.projectId, to: \Project.id, onDelete: .cascade)
+            builder.reference(from: \.labelId, to: \LabelEnum.id, onDelete: .cascade)
         }
     }
 }

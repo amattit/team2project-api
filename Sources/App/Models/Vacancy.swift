@@ -74,8 +74,8 @@ extension Vacancy: PostgreSQLMigration {
             builder.field(for: \.isVacant)
             builder.field(for: \.aboutVacancy, type: .varchar(3000))
             builder.field(for: \.aboutFeatures, type: .varchar(3000))
-            builder.reference(from: \.projectId, to: \Project.id)
-            builder.reference(from: \.ownerId, to: \User.id)
+            builder.reference(from: \.projectId, to: \Project.id, onDelete: .cascade)
+            builder.reference(from: \.ownerId, to: \User.id, onDelete: .cascade)
         }
     }
 }
