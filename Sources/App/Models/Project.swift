@@ -83,7 +83,7 @@ extension Project: PostgreSQLMigration {
             builder.field(for: \.ownerId)
             builder.field(for: \.imagePath)
             builder.field(for: \.isPublished)
-            builder.reference(from: \.ownerId, to: \User.id)
+            builder.reference(from: \.ownerId, to: \User.id, onDelete: .cascade)
         }
     }
 }

@@ -68,7 +68,7 @@ extension UserToken: Migration {
             builder.field(for: \.string)
             builder.field(for: \.userID)
             builder.field(for: \.expiresAt)
-            builder.reference(from: \.userID, to: \User.id)
+            builder.reference(from: \.userID, to: \User.id, onDelete: .cascade)
 
             
         }

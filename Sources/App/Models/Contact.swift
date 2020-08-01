@@ -42,7 +42,7 @@ extension Contact: PostgreSQLMigration {
             builder.field(for: \.ownerId)
             builder.field(for: \.created)
             builder.field(for: \.updated)
-            builder.reference(from: \.ownerId, to: \User.id)
+            builder.reference(from: \.ownerId, to: \User.id, onDelete: .cascade)
         }
     }
 }

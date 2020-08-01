@@ -52,7 +52,7 @@ extension Link: PostgreSQLMigration {
             builder.field(for: \.projectId)
             builder.field(for: \.created)
             builder.field(for: \.updated)
-            builder.reference(from: \.ownerId, to: \User.id)
+            builder.reference(from: \.ownerId, to: \User.id, onDelete: .cascade)
             builder.reference(from: \.projectId, to: \Project.id, onDelete: .cascade)
         }
     }

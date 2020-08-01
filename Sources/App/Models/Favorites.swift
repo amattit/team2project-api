@@ -34,8 +34,8 @@ extension UserProject: PostgreSQLMigration {
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.projectId)
             builder.field(for: \.userId)
-            builder.reference(from: \.projectId, to: \Project.id)
-            builder.reference(from: \.userId, to: \User.id)
+            builder.reference(from: \.projectId, to: \Project.id, onDelete: .cascade)
+            builder.reference(from: \.userId, to: \User.id, onDelete: .cascade)
         }
     }
 }
