@@ -43,7 +43,9 @@ extension ProjectController {
             return try req.content.decode(CreateVacancyRequest.self).flatMap { request in
                 return Vacancy.ShareType.query(on: req).all().flatMap { shareTypes in
                     if shareTypes.contains(where: { $0.title == request.shareType }) {
-                        return try Vacancy(with: request, for: try project.requireID(), ownerId: try user.requireID()).save(on: req).map {
+                        let vacancy = try Vacancy(with: request, for: try project.requireID(), ownerId: try user.requireID())
+                        try vacancy.validate()
+                        return vacancy.save(on: req).map {
                             return try VacancyResponse(with: $0, contact: user)
                         }
                     } else {

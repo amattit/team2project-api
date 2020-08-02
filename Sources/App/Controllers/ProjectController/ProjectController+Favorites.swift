@@ -83,6 +83,11 @@ extension ProjectController.ProjectListResponse {
         self.user = try UserResponse(with: user)
         self.labels = nil
         self.imagePath = project.imagePath
+        if project.isPublished == 1 {
+            self.isPublished = true
+        } else {
+            self.isPublished = false
+        }
     }
 }
 
@@ -90,5 +95,16 @@ extension ProjectController {
     struct FavoritesResponse: Content {
         let projects: [ProjectListResponse]
         let users: [UserResponse]
+    }
+}
+
+extension Int {
+    var isPublished: Bool {
+        switch self {
+        case 1:
+            return true
+        default:
+            return false
+        }
     }
 }

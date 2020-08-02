@@ -8,7 +8,7 @@ final class ProjectController {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).map { user in
                     return try self.getLabels(for: project, on: req).map { labels in
-                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath)
+                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished)
                     }
                 }
             }.flatten(on: req)
@@ -22,7 +22,7 @@ final class ProjectController {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).map { user in
                     return try self.getLabels(for: project, on: req).map { labels in
-                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath)
+                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished)
                     }
                 }
             }.flatten(on: req)
@@ -35,7 +35,7 @@ final class ProjectController {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).map { user in
                     return try self.getLabels(for: project, on: req).map { labels in
-                        return ProjectListResponse(id: try project.requireID(), name: project.title, description: project.description, useremail: user.email, created: project.created, user: UserResponse(id: try user.requireID(), email: user.email), labels: labels, imagePath: project.imagePath)
+                        return ProjectListResponse(id: try project.requireID(), name: project.title, description: project.description, useremail: user.email, created: project.created, user: UserResponse(id: try user.requireID(), email: user.email), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished)
                     }
                 }
             }.flatten(on: req)
@@ -50,7 +50,7 @@ final class ProjectController {
                     return try self.getLinksRs(project: project, on: req).flatMap { links in
                         return project.user.get(on: req).flatMap { user in
                             return try project.vacancy.query(on: req).all().map { vacancy in
-                                return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy)
+                                return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy, isPublished: project.isPublished.isPublished)
                             }
                         }
                     }
@@ -60,7 +60,7 @@ final class ProjectController {
                     return try self.getLinksRs(project: project, on: req).flatMap { links in
                         return project.user.get(on: req).flatMap { user in
                             return try project.vacancy.query(on: req).all().map { vacancy in
-                                return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy)
+                                return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy, isPublished: project.isPublished.isPublished)
                             }
                         }
                     }
@@ -75,7 +75,7 @@ final class ProjectController {
             let project = Project(id: nil, name: request.name, userID: try user.requireID(), description: request.description, imagePath: request.imagePath)
             try project.validate()
             return project.save(on: req).map {
-                return CreateProjectResponse(id: try $0.requireID(), name: $0.title, description: $0.description, created: Date(), user: UserResponse(id: try user.requireID(), email: user.email))
+                return CreateProjectResponse(id: try $0.requireID(), name: $0.title, description: $0.description, created: Date(), user: UserResponse(id: try user.requireID(), email: user.email), isPublished: $0.isPublished.isPublished)
             }
         }
     }

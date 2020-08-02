@@ -113,3 +113,11 @@ struct ShareTypeDefaultData: PostgreSQLMigration {
         return Vacancy.ShareType(title: "FullTime").save(on: conn).transform(to: ())
     }
 }
+
+extension Vacancy: Validatable {
+    static func validations() throws -> Validations<Vacancy> {
+        var validations = Validations(Vacancy.self)
+        try validations.add(\.title, .count(3...255))
+        return validations
+    }
+}

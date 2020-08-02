@@ -32,6 +32,7 @@ extension ProjectController {
         let user: UserResponse
         let labels: [LabelEnum]?
         let imagePath: String?
+        let isPublished: Bool
     }
     
     struct VacancyProjectListResponse: Content {
@@ -51,6 +52,7 @@ extension ProjectController {
         let description: String
         let created: Date
         let user: UserResponse
+        let isPublished: Bool
     }
     
     struct DetailProjectResponse: Content {
@@ -63,8 +65,9 @@ extension ProjectController {
         let user: UserResponse
         let imagePath: String?
         let vacancy: [VacancyResponse]?
+        let isPublished: Bool
         
-        init(_ project: Project, links: [LinkResponse], labels: [LabelEnum], user: User, vacancy: [Vacancy]? = nil) throws {
+        init(_ project: Project, links: [LinkResponse], labels: [LabelEnum], user: User, vacancy: [Vacancy]? = nil, isPublished: Bool) throws {
             self.id = try project.requireID()
             self.name = project.title
             self.description = project.description
@@ -74,6 +77,7 @@ extension ProjectController {
             self.links = links
             self.imagePath = project.imagePath
             self.vacancy = try vacancy?.compactMap { try VacancyResponse(with: $0, contact: user) }
+            self.isPublished = isPublished
         }
     }
     
