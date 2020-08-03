@@ -24,7 +24,7 @@ class ImageController {
         let user = try req.requireAuthenticated(User.self)
         return try req.content.decode(ImageRequest.self).map { imageData in
             let workPath = try req.make(DirectoryConfig.self).workDir
-            let url = URL(fileURLWithPath: workPath).appendingPathComponent("Public/images")
+            let url = URL(fileURLWithPath: workPath).appendingPathComponent("images")
             let name = try "\(user.requireID())-\(UUID().uuidString).jpg"
             let parh = url.appendingPathComponent(name)
             let path = workPath + self.imageFolder + name
