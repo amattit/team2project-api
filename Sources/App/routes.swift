@@ -7,6 +7,7 @@ public func routes(_ router: Router) throws {
     // public routes
     let userController = UserController()
     let projectController = ProjectController()
+    let imageController = ImageController()
     let v1 = router.grouped("api", "v1")
     let basic = v1.grouped(User.basicAuthMiddleware(using: BCryptDigest()))
     let bearer = v1.grouped(User.tokenAuthMiddleware())
@@ -65,4 +66,7 @@ public func routes(_ router: Router) throws {
     
     bearer.delete("user", "favorites", "user", User.parameter, use: projectController.deleteFavoriteUser)
     bearer.delete("user", "favorites", "project", Project.parameter,use: projectController.deleteFavoriteProject)
+    
+    //MARK: Images
+    bearer.post("file", "upload", use: imageController.addProfilePicturePostHandler)
 }

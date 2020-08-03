@@ -18,7 +18,7 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     // Register middleware
     var middlewares = MiddlewareConfig() // Create _empty_ middleware config
     // middlewares.use(SessionsMiddleware.self) // Enables sessions.
-    // middlewares.use(FileMiddleware.self) // Serves files from `Public/` directory
+     middlewares.use(FileMiddleware.self) // Serves files from `Public/` directory
     
     let corsConfiguration = CORSMiddleware.Configuration(
         allowedOrigin: .all,
