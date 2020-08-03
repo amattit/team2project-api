@@ -25,7 +25,7 @@ class ImageController {
         return try req.content.decode(ImageRequest.self).map { imageData in
             let workPath = try req.make(DirectoryConfig.self).workDir
             let name = try "\(user.requireID())-\(UUID().uuidString).jpg"
-            let path = workPath + self.imageFolder + name
+            let path = self.imageFolder + name
             FileManager().createFile(atPath: path, contents: imageData.image, attributes: nil)
             
             //        let redirect = try req.redirect(to: "/users/\(user.requireID())")
