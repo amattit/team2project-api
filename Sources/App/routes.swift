@@ -69,4 +69,5 @@ public func routes(_ router: Router) throws {
     
     //MARK: Images
     bearer.post("file", "upload", use: imageController.addProfilePicturePostHandler)
+    v1.post("file", "upload", "imgur", use: imageController.imgurUploadFile)
 }
