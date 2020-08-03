@@ -9,7 +9,7 @@ import Vapor
 
 class ImageController {
     
-    let imageFolder: String = "Public/images/"
+    let imageFolder: String = "images"
 //    func imageUpload(_ req: Request) throws -> Future<ImageResponse> {
 //        return try req.content.decode(ImageRequest.self).map { imageRequest in
 //            
@@ -25,11 +25,11 @@ class ImageController {
         return try req.content.decode(ImageRequest.self).map { imageData in
             let workPath = try req.make(DirectoryConfig.self).workDir
             let name = try "\(user.requireID())-\(UUID().uuidString).jpg"
-            let path = self.imageFolder + name
+            let path = workPath + self.imageFolder + name
             FileManager().createFile(atPath: path, contents: imageData.image, attributes: nil)
             
             //        let redirect = try req.redirect(to: "/users/\(user.requireID())")
-            return ImageResponse(imagePath: path)
+            return ImageResponse(imagePath: self.imageFolder + name)
         }
     }
 }
