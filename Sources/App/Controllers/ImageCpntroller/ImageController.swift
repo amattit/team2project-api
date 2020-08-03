@@ -24,15 +24,21 @@ class ImageController {
         let user = try req.requireAuthenticated(User.self)
         return try req.content.decode(ImageRequest.self).map { imageData in
             let workPath = try req.make(DirectoryConfig.self).workDir
-            let url = URL(fileURLWithPath: workPath).appendingPathComponent("images")
+            let url = URL(fileURLWithPath: workPath).appendingPathComponent("Public").appendingPathComponent("images")
             let name = try "\(user.requireID())-\(UUID().uuidString).jpg"
-            let parh = url.appendingPathComponent(name)
-            let path = workPath + self.imageFolder + name
-            FileManager().createFile(atPath: parh.path, contents: imageData.image, attributes: nil)
+            let path = url.appendingPathComponent(name)
+//            let path = workPath + self.imageFolder + name
+            if FileManager().createFile(atPath: path.path, contents: imageData.image, attributes: nil) {
+                return ImageResponse(imagePath: path.path)
+            } else {
+                throw Abort(.badRequest, reason: "Ты не умеешь кодить")
+            }
+            
+            
 //            FileManager().createFile(atPath: path, contents: imageData.image, attributes: nil)
             
             //        let redirect = try req.redirect(to: "/users/\(user.requireID())")
-            return ImageResponse(imagePath: parh.path)
+            
         }
     }
     
