@@ -49,6 +49,7 @@ struct LabelEnumDefaultData: PostgreSQLMigration {
         let _ = LabelEnum(title: "есть ТЗ").save(on: conn).transform(to: ())
         let _ = LabelEnum(title: "работает").save(on: conn).transform(to: ())
         let _ = LabelEnum(title: "делаем анализ").save(on: conn).transform(to: ())
+        let _ = LabelEnum(title: "ищем деньги").save(on: conn).transform(to: ())
         return LabelEnum(title: "масштабируем").save(on: conn).transform(to: ())
         
     }

@@ -6,14 +6,14 @@ FROM swift:5.1.3 as builder
 ARG env
 
 # эти три строки ты закомментил
-#RUN apt-get -qq update && apt-get -q -y install \
-#  tzdata \
-#  && rm -r /var/lib/apt/lists/*
+RUN apt-get -qq update && apt-get -q -y install \
+  tzdata \
+  && rm -r /var/lib/apt/lists/*
 WORKDIR /app
 COPY . .
 RUN mkdir -p /build/lib && cp -R /usr/lib/swift/linux/*.so /build/lib
 # и это ты закомментил
-#RUN swift build -c release && mv `swift build -c release --show-bin-path` /build/bin
+RUN swift build -c release && mv `swift build -c release --show-bin-path` /build/bin
 
 # Production image
 FROM ubuntu:18.04
