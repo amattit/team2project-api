@@ -17,7 +17,6 @@ extension ProjectController {
         }
     }
     
-    
     /// GET /api/v1/user/favorites/user - только избранные пользователи
     func getFavoriteUsers(_ req: Request) throws -> Future<[UserResponse]> {
         let user = try req.requireAuthenticated(User.self)

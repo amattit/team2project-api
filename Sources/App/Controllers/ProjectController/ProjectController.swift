@@ -6,13 +6,16 @@ final class ProjectController {
     func allProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
         return Project.query(on: req).filter(\.isPublished, .equal, 1).all().flatMap {
             return try $0.map { project in
-                return try self.getUserFor(project, on: req).map { user in
-                    return try self.getLabels(for: project, on: req).map { labels in
-                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished)
+                return try self.getUserFor(project, on: req).flatMap { user in
+                    return try self.getLabels(for: project, on: req).flatMap { labels in
+                        return try self.getFavoriteProjects(req).map { favorites in
+                            return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished, isFavorite: favorites.contains { $0.id == project.id})
+                        }
+                        
                     }
                 }
             }.flatten(on: req)
-        }.flatMap { $0.flatten(on: req) }
+        }
     }
     
     func allMyPublickProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
@@ -56,11 +59,14 @@ final class ProjectController {
                     }
                 }
             } else {
+                let selfUser = try req.requireAuthenticated(User.self)
                 return try self.getLabels(for: project, on: req).flatMap { labels in
                     return try self.getLinksRs(project: project, on: req).flatMap { links in
                         return project.user.get(on: req).flatMap { user in
-                            return try project.vacancy.query(on: req).all().map { vacancy in
-                                return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy, isPublished: project.isPublished.isPublished)
+                            return try project.vacancy.query(on: req).all().flatMap { vacancy in
+                                return project.inFavorite.isAttached(selfUser, on: req).map { inFavorite in
+                                    return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy, isPublished: project.isPublished.isPublished, isFavorite: inFavorite)
+                                }
                             }
                         }
                     }
