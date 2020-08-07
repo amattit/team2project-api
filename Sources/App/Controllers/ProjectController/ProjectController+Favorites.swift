@@ -30,7 +30,7 @@ extension ProjectController {
     /// GET /api/v1/user/favorites/project - только избранные проекты
     func getFavoriteProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
         let user = try req.requireAuthenticated(User.self)
-        return try user.favoritesProjects.query(on: req).all().flatMap { projects in
+        return try user.favoritesProjects.query(on: req).filter(\.isPublished, .equal, 1).all().flatMap { projects in
             return projects.map { project in
                 return project.user.query(on: req).first().unwrap(or: Abort(.badRequest)).map { user in
                     return try ProjectListResponse(with: project, and: user)
