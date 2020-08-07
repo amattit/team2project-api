@@ -32,7 +32,7 @@ extension ProjectController {
         return try user.favoritesProjects.query(on: req).filter(\.isPublished, .equal, 1).all().flatMap { projects in
             return projects.map { project in
                 return project.user.query(on: req).first().unwrap(or: Abort(.badRequest)).map { user in
-                    return try ProjectListResponse(with: project, and: user)
+                    return try ProjectListResponse(with: project, and: user, isFavorite: true)
                 }
             }.flatten(on: req)
         }
@@ -41,14 +41,26 @@ extension ProjectController {
     func setFavoriteUser(_ req: Request) throws -> Future<HTTPStatus> {
         let user = try req.requireAuthenticated(User.self)
         return try req.parameters.next(User.self).flatMap { addedUser in
-            return FavoriteUser(ownerId: try user.requireID(), favUserId: try addedUser.requireID()).save(on: req).transform(to: HTTPStatus.ok)
+            return FavoriteUser.query(on: req).filter(\.ownerId, .equal, try user.requireID()).all().flatMap { favUsers in
+                if  try !favUsers.contains(where: { try addedUser.requireID() == $0.favoriteUserId }) {
+                    return FavoriteUser(ownerId: try user.requireID(), favUserId: try addedUser.requireID()).save(on: req).transform(to: HTTPStatus.ok)
+                } else {
+                    throw Abort(.alreadyReported, reason: "")
+                }
+            }
         }
     }
     /// POST /api/v1/user/favorites/project/:projectId - добавление пользователя в избранное
     func setFavoriteProject(_ req: Request) throws -> Future<HTTPStatus> {
         let user = try req.requireAuthenticated(User.self)
         return try req.parameters.next(Project.self).flatMap { project in
-            return user.favoritesProjects.attach(project, on: req).transform(to: HTTPStatus.ok)
+            return user.favoritesProjects.isAttached(project, on: req).flatMap { isAttached in
+                if !isAttached {
+                    return user.favoritesProjects.attach(project, on: req).transform(to: HTTPStatus.ok)
+                } else {
+                    throw Abort(.alreadyReported, reason: "Уже в избранном")
+                }
+            }
         }
     }
     
@@ -87,6 +99,25 @@ extension ProjectController.ProjectListResponse {
         } else {
             self.isPublished = false
         }
+    }
+}
+
+extension ProjectController.ProjectListResponse {
+    init(with project: Project, and user: User, isFavorite: Bool = false) throws {
+        self.id = try project.requireID()
+        self.name = project.title
+        self.description = project.description
+        self.useremail = ""
+        self.created = project.created
+        self.user = try UserResponse(with: user)
+        self.labels = nil
+        self.imagePath = project.imagePath
+        if project.isPublished == 1 {
+            self.isPublished = true
+        } else {
+            self.isPublished = false
+        }
+        self.isFavorite = isFavorite
     }
 }
 

@@ -59,6 +59,8 @@ struct UserResponse: Content {
     
     var role: String?
     
+    var isFavorite = false
+    
     init(id: Int, email: String, name: String? = nil, imagePath: String? = nil, about: String? = nil, location: String? = nil, role: String? = nil) {
         self.id = id
         self.email = email
@@ -76,6 +78,17 @@ struct UserResponse: Content {
         self.about = user.about
         self.location = user.location
         self.role = user.role
+    }
+    
+    init(with user: User, isFavorite: Bool = false) throws {
+        self.id = try user.requireID()
+        self.email = user.email
+        self.name = user.name
+        self.imagePath = user.imagePath
+        self.about = user.about
+        self.location = user.location
+        self.role = user.role
+        self.isFavorite = isFavorite
     }
     
     init(with user: User, contacts: [Contact]) throws {

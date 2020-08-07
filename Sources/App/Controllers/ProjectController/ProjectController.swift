@@ -8,10 +8,15 @@ final class ProjectController {
             return try $0.map { project in
                 return try self.getUserFor(project, on: req).flatMap { user in
                     return try self.getLabels(for: project, on: req).flatMap { labels in
-                        return try self.getFavoriteProjects(req).map { favorites in
-                            return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished, isFavorite: favorites.contains { $0.id == project.id})
+                        if try req.isAuthenticated(User.self) {
+                            return try self.getFavoriteProjects(req).map { favorites in
+                                return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished, isFavorite: favorites.contains { $0.id == project.id})
+                            }
+                        } else {
+                            return LabelEnum.query(on: req).count().map { _ in
+                                return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished, isFavorite: false)
+                            }
                         }
-                        
                     }
                 }
             }.flatten(on: req)
@@ -59,13 +64,19 @@ final class ProjectController {
                     }
                 }
             } else {
-                let selfUser = try req.requireAuthenticated(User.self)
                 return try self.getLabels(for: project, on: req).flatMap { labels in
                     return try self.getLinksRs(project: project, on: req).flatMap { links in
                         return project.user.get(on: req).flatMap { user in
                             return try project.vacancy.query(on: req).all().flatMap { vacancy in
-                                return project.inFavorite.isAttached(selfUser, on: req).map { inFavorite in
-                                    return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy, isPublished: project.isPublished.isPublished, isFavorite: inFavorite)
+                                if try req.isAuthenticated(User.self) {
+                                    let selfUser = try req.requireAuthenticated(User.self)
+                                    return project.inFavorite.isAttached(selfUser, on: req).map { inFavorite in
+                                        return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy, isPublished: project.isPublished.isPublished, isFavorite: inFavorite)
+                                    }
+                                } else {
+                                    return LabelEnum.query(on: req).count().map { _ in
+                                        return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy, isPublished: project.isPublished.isPublished, isFavorite: false)
+                                    }
                                 }
                             }
                         }
