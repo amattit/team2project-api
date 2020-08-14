@@ -26,7 +26,7 @@ public func routes(_ router: Router) throws {
     bearer.delete("user", "contact", Contact.parameter, use: userController.deleteContact)
     
     // MARK: projects
-    router.get("api", "v1", "project", use: projectController.allProjects) // - done
+    bearer.get("project", use: projectController.allProjects) // - done
     bearer.get("project", "my", use: projectController.allMyPublickProjects) // - done
     bearer.post("project", use: projectController.createProject) // - done
     bearer.delete("project", Project.parameter, use: projectController.deleteProject) // - done
