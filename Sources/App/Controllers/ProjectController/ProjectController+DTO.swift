@@ -34,6 +34,45 @@ extension ProjectController {
         let imagePath: String?
         let isPublished: Bool
         var isFavorite: Bool = false
+        
+        init(_ project: Project, labels: [LabelEnum], user: User) throws {
+            self.id = try project.requireID()
+            self.name = project.title
+            self.description = project.description
+            self.useremail = ""
+            self.created = project.created
+            self.user = try UserResponse(with: user)
+            self.labels = labels
+            self.imagePath = project.imagePath
+            self.isPublished = project.isPublished.isPublished
+            self.isFavorite = false
+        }
+        
+        init(_ project: Project, labels: [LabelEnum], user: User, isFavorite: Bool) throws {
+            self.id = try project.requireID()
+            self.name = project.title
+            self.description = project.description
+            self.useremail = ""
+            self.created = project.created
+            self.user = try UserResponse(with: user)
+            self.labels = labels
+            self.imagePath = project.imagePath
+            self.isPublished = project.isPublished.isPublished
+            self.isFavorite = isFavorite
+        }
+        
+        init(id: Int, name: String, description: String, useremail: String, created: Date, user: UserResponse, labels: [LabelEnum] = [], imagePath: String?, isPublished: Bool, isFavorite: Bool = false) {
+            self.id = id
+            self.name = name
+            self.description = description
+            self.useremail = ""
+            self.created = created
+            self.user = user
+            self.labels = labels
+            self.imagePath = imagePath
+            self.isPublished = isPublished
+            self.isFavorite = isFavorite
+        }
     }
     
     struct VacancyProjectListResponse: Content {

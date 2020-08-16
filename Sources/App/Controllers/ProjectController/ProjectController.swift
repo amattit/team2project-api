@@ -2,52 +2,37 @@ import Vapor
 
 /// Simple todo-list controller.
 final class ProjectController {
-
+    
     func allProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
-        return Project.query(on: req).filter(\.isPublished, .equal, 1).all().flatMap {
-            return try $0.map { project in
-                return try self.getUserFor(project, on: req).flatMap { user in
-                    return try self.getLabels(for: project, on: req).flatMap { labels in
-                        if try req.isAuthenticated(User.self) {
-                            return try self.getFavoriteProjects(req).map { favorites in
-                                return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished, isFavorite: favorites.contains { $0.id == project.id})
-                            }
-                        } else {
-                            return LabelEnum.query(on: req).count().map { _ in
-                                return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished, isFavorite: false)
-                            }
+        return Project.query(on: req)
+            .filter(\.isPublished, .equal, 1)
+            .join(\User.id, to: \Project.ownerId)
+            .alsoDecode(User.self)
+            .all()
+            .flatMap { results in
+                return try results.map { res in
+                    return try self.getFavoriteProjects(req).flatMap { favorites in
+                        return try self.getLabels(for: res.0, on: req).map { labels in
+                            return try ProjectListResponse(res.0, labels: labels, user: res.1, isFavorite: favorites.contains {$0.id == res.0.id})
                         }
                     }
-                }
-            }.flatten(on: req)
+                }.flatten(on: req)
         }
     }
     
-    func allMyPublickProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
+    func allMyProjectsWithQueryOption(_ req: Request) throws -> Future<[ProjectListResponse]> {
         let user = try req.requireAuthenticated(User.self)
         let query = try req.query.decode(AllMyProjectsQuery.self)
-        return Project.query(on: req).filter(\.ownerId, .equal, try user.requireID()).filter(\.isPublished, .equal, query.value).all().flatMap {
-            return try $0.map { project in
-                return try self.getUserFor(project, on: req).map { user in
-                    return try self.getLabels(for: project, on: req).map { labels in
-                        return ProjectListResponse(id: project.id!, name: project.title, description: project.description, useremail: user.email, created: project.created, user: try UserResponse(with: user), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished)
+        return try user.projects.query(on: req)
+            .filter(\.isPublished, .equal, query.value)
+            .all()
+            .flatMap { projects in
+                return try projects.compactMap { project in
+                    return try self.getLabels(for: project, on: req).map {
+                        return try ProjectListResponse(project, labels: $0, user: user)
                     }
-                }
-            }.flatten(on: req)
-        }.flatMap { $0.flatten(on: req) }
-    }
-    
-    func checkoutProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
-        let user = try req.requireAuthenticated(User.self)
-        return Project.query(on: req).filter(\.ownerId, .equal, try user.requireID()).filter(\.isPublished, .equal, 0).all().flatMap {
-            return try $0.map { project in
-                return try self.getUserFor(project, on: req).map { user in
-                    return try self.getLabels(for: project, on: req).map { labels in
-                        return ProjectListResponse(id: try project.requireID(), name: project.title, description: project.description, useremail: user.email, created: project.created, user: UserResponse(id: try user.requireID(), email: user.email), labels: labels, imagePath: project.imagePath, isPublished: project.isPublished.isPublished)
-                    }
-                }
-            }.flatten(on: req)
-        }.flatMap { $0.flatten(on: req) }
+                }.flatten(on: req)
+        }
     }
     
     func projectDetail(_ req: Request) throws -> Future<DetailProjectResponse> {
@@ -154,10 +139,4 @@ final class ProjectController {
             return project.delete(on: req)
         }.transform(to: .ok)
     }
-    
-    /// don't use
-    private func getUserFor(_ project: Project, on req: Request) throws -> Future<User> {
-        return project.user.query(on: req).first().unwrap(or: Abort(.notFound, reason: "Пользователь не найден"))
-    }
-    
  }

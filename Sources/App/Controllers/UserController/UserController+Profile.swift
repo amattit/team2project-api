@@ -15,10 +15,15 @@ extension UserController {
         }
     }
     
-    func getUser(_ req: Request) throws -> Future<UserResponse> {
+    func getUser(_ req: Request) throws -> Future<UserWithProjectsResponse> {
         return try req.parameters.next(User.self).flatMap { user in
-            return try user.contacts.query(on: req).all().map { contacts in
-                return try UserResponse(with: user, contacts: contacts)
+            return try user.contacts.query(on: req).all().flatMap { contacts in
+                return try user.projects.query(on: req)
+                    .filter(\.isPublished, .equal, 1)
+                    .all()
+                    .map { projects in
+                        return try UserWithProjectsResponse(user, contacts: contacts, projects: projects)
+                }
             }
         }
     }
@@ -61,5 +66,40 @@ extension UserController {
         return User.query(on: req).all().map { users in
             return try users.map { try UserResponse(with: $0) }
         }
+    }
+}
+
+struct UserWithProjectsResponse: Content {
+    var id: Int
+    
+    var email: String
+    
+    var name: String?
+    
+    var imagePath: String?
+    
+    var about: String?
+    
+    var contacts: [ContactResponse]?
+    
+    var location: String?
+    
+    var role: String?
+    
+    var isFavorite: Bool?
+    
+    let projects: [ProjectController.ProjectListResponse]?
+    
+    init(_ user: User, contacts: [Contact], projects: [Project]) throws {
+        self.id = try user.requireID()
+        self.email = user.email
+        self.name = user.name
+        self.imagePath = user.imagePath
+        self.about = user.about
+        self.location = user.location
+        self.role = user.role
+        self.isFavorite = nil
+        self.contacts = try contacts.map { try ContactResponse(contact: $0)}
+        self.projects = try projects.map { try ProjectController.ProjectListResponse(with: $0, and: user) }
     }
 }

@@ -73,6 +73,12 @@ extension User {
     }
 }
 
+extension User {
+    var projects: Children<User, Project> {
+        return children(\.ownerId)
+    }
+}
+
 /// Allows users to be verified by bearer / token auth middleware.
 extension User: TokenAuthenticatable {
     /// See `TokenAuthenticatable`.

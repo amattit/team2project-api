@@ -27,7 +27,7 @@ public func routes(_ router: Router) throws {
     
     // MARK: projects
     bearer.get("project", use: projectController.allProjects) // - done
-    bearer.get("project", "my", use: projectController.allMyPublickProjects) // - done
+    bearer.get("project", "my", use: projectController.allMyProjectsWithQueryOption) // - done
     bearer.post("project", use: projectController.createProject) // - done
     bearer.delete("project", Project.parameter, use: projectController.deleteProject) // - done
     bearer.put("project", Project.parameter, use: projectController.updateProject) // - done
@@ -66,4 +66,15 @@ public func routes(_ router: Router) throws {
     bearer.delete("user", "favorites", "user", User.parameter, use: projectController.deleteFavoriteUser)
     bearer.delete("user", "favorites", "project", Project.parameter,use: projectController.deleteFavoriteProject)
     
+    //MARK: Comments
+    bearer.get("project", Project.parameter, "comment", use: projectController.getComments)
+    bearer.post("project", Project.parameter, "comment", use: projectController.addComment)
+    bearer.delete("project", Project.parameter, "comment", Comment.parameter, use: projectController.deleteComment)
+    bearer.get("project", Project.parameter, "comment", "count", use:projectController.getCommentsCount)
+    
+    //MARK: Likes
+    bearer.get("project", Project.parameter, "like", use: projectController.getProjectLikes)
+    bearer.get("project", Project.parameter, "like", "count", use: projectController.getProjectLikeCount)
+    bearer.post("project", Project.parameter, "like", use: projectController.addLike)
+    bearer.delete("project", Project.parameter, "like", Like.parameter, use: projectController.deleteLike)
 }

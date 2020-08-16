@@ -68,6 +68,8 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     migrations.add(model: UserProject.self, database: .psql)
     migrations.add(model: FavoriteUser.self, database: .psql)
     migrations.add(migration: UserEmailUnicMigration.self, database: .psql)
+    migrations.add(model: Comment.self, database: .psql)
+    migrations.add(model: Like.self, database: .psql)
     services.register(migrations)
 
 }

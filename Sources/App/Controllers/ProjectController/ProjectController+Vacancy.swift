@@ -9,28 +9,33 @@ import Vapor
 
 extension ProjectController {
     func getAllVacancy(_ req: Request) throws -> Future<[VacancyResponse]> {
-        return Vacancy.query(on: req).filter(\.isVacant, .equal, true).all().flatMap { vacancys in
-            let vac = vacancys.map { vacancy in
-                return vacancy.owner.get(on: req).map { user in
-                    return vacancy.project.get(on: req).map { project in
-                        return try VacancyResponse(with: vacancy, contact: user, project: project)
-                    }
+        return Vacancy.query(on: req)
+            .filter(\.isVacant, .equal, true)
+            .join(\User.id, to: \Vacancy.ownerId)
+            .join(\Project.id, to: \Vacancy.projectId)
+            .alsoDecode(User.self)
+            .alsoDecode(Project.self)
+            .all()
+            .map { results in
+                try results.map { result in
+                    return try VacancyResponse(with: result.0.0, contact: result.0.1, project: result.1)
                 }
-            }
-            return vac.flatten(on: req)
-                .flatMap{ $0.flatten(on: req) }
         }
     }
     
     func getProjectVacancy(_ req: Request) throws -> Future<[VacancyResponse]> {
-        return try req.parameters.next(Project.self).flatMap { project in
-            return try project.vacancy.query(on: req).filter(\.isVacant, .equal, true).all().flatMap { vacancys in
-                return vacancys.map { vacancy in
-                    return project.user.get(on: req).map { user in
-                        return try VacancyResponse(with: vacancy, contact: user)
-                    }
-                }.flatten(on: req)
-            }
+        return try req.parameters.next(Project.self)
+            .flatMap { project in
+                return try project.vacancy.query(on: req)
+                    .filter(\.isVacant, .equal, true)
+                    .join(\User.id, to: \Vacancy.ownerId)
+                    .alsoDecode(User.self)
+                    .all()
+                    .map { results in
+                        return try results.map {
+                            return try VacancyResponse(with: $0.0, contact: $0.1)
+                        }
+                }
         }
     }
     
