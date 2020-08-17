@@ -32,13 +32,13 @@ extension ProjectController {
     /// Удалить Лайк api/v1/project/123/like/321
     func deleteLike(_ req: Request) throws -> Future<HTTPStatus> {
         let user = try req.requireAuthenticated(User.self)
-        let _ = try req.parameters.next(Project.self)
-        return try req.parameters.next(Like.self).flatMap {
-            guard try user.requireID() == $0.ownerId else {
-                throw Abort(.forbidden, reason: "Только владелец лайка может удалить Лайк")
+        return try req.parameters.next(Project.self).flatMap { project in
+            return try project.likes.query(on: req).all().flatMap { likes in
+                guard let like = try likes.first(where: { try user.requireID() == $0.ownerId }) else {
+                    throw Abort(.notFound, reason: "Не Лайкал еще")
+                }
+                return like.delete(on: req).transform(to: .ok)
             }
-            return $0.delete(on: req)
-                .transform(to: HTTPStatus.ok)
         }
     }
     
