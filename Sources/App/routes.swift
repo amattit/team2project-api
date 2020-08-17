@@ -76,5 +76,5 @@ public func routes(_ router: Router) throws {
     bearer.get("project", Project.parameter, "like", use: projectController.getProjectLikes)
     bearer.get("project", Project.parameter, "like", "count", use: projectController.getProjectLikeCount)
     bearer.post("project", Project.parameter, "like", use: projectController.addLike)
-    bearer.delete("project", Project.parameter, "like", Like.parameter, use: projectController.deleteLike)
+    bearer.delete("project", Project.parameter, "like", use: projectController.deleteLike)
 }
