@@ -50,9 +50,34 @@ final class ProjectController {
             .all()
             .flatMap { projects in
                 return try projects.compactMap { project in
-                    return try self.getLabels(for: project, on: req).map {
-                        return try ProjectListResponse(project, labels: $0, user: user)
+                    return try self.getFavoriteProjects(req).flatMap { favorites in
+                        return try self.getLabels(for: project, on: req).flatMap { labels in
+                            return try self.getLikesForProject(project, on: req).flatMap { likes in
+                                return try self.getCommentsFor(project, on: req).map { comments in
+//                                    let project = res.0
+//                                    let user = res.1
+                                    let isFaorite = try favorites.contains(where: {
+                                        try $0.id == project.requireID()
+                                    })
+                                    var isLike = false
+                                    if try req.isAuthenticated(User.self) {
+                                        let user = try req.requireAuthenticated(User.self)
+                                        isLike = try likes.contains(where: {
+                                            try $0.user.id == user.requireID()
+                                        })
+                                    } else {
+                                        isLike = try likes.contains(where: {
+                                            try $0.user.id == user.requireID()
+                                        })
+                                    }
+                                    return try ProjectListResponse(project, labels: labels, user: user, isFavorite: isFaorite, isLike: isLike, likeCount: likes.count, commentCount: comments.count)
+                                }
+                            }
+                        }
                     }
+//                    return try self.getLabels(for: project, on: req).map {
+//                        return try ProjectListResponse(project, labels: $0, user: user)
+//                    }
                 }.flatten(on: req)
         }
     }

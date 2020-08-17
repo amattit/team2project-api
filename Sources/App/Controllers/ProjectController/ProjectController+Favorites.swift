@@ -30,11 +30,32 @@ extension ProjectController {
     func getFavoriteProjects(_ req: Request) throws -> Future<[ProjectListResponse]> {
         if try req.isAuthenticated(User.self) {
             let user = try req.requireAuthenticated(User.self)
-            return try user.favoritesProjects.query(on: req).filter(\.isPublished, .equal, 1).all().flatMap { projects in
-                return projects.map { project in
-                    return project.user.query(on: req).first().unwrap(or: Abort(.badRequest)).map { user in
-                        return try ProjectListResponse(with: project, and: user, isFavorite: true)
-                    }
+            return try user.favoritesProjects.query(on: req).filter(\.isPublished, .equal, 1)
+                .join(\User.id, to: \Project.ownerId)
+                .alsoDecode(User.self)
+                .all().flatMap { result in
+                return try result.map { res in
+//                    return try self.getFavoriteProjects(req).flatMap { favorites in
+                        return try self.getLabels(for: res.0, on: req).flatMap { labels in
+                            return try self.getLikesForProject(res.0, on: req).flatMap { likes in
+                                return try self.getCommentsFor(res.0, on: req).map { comments in
+                                    let user = res.1
+                                    var isLike = false
+                                    if try req.isAuthenticated(User.self) {
+                                        let user = try req.requireAuthenticated(User.self)
+                                        isLike = try likes.contains(where: {
+                                            try $0.user.id == user.requireID()
+                                        })
+                                    } else {
+                                        isLike = try likes.contains(where: {
+                                            try $0.user.id == user.requireID()
+                                        })
+                                    }
+                                    return try ProjectListResponse(res.0, labels: labels, user: res.1, isFavorite: true, isLike: isLike, likeCount: likes.count, commentCount: comments.count)
+                                }
+                            }
+                        }
+//                    }
                 }.flatten(on: req)
             }
         } else {
