@@ -31,7 +31,7 @@ public func routes(_ router: Router) throws {
     bearer.post("project", use: projectController.createProject) // - done
     bearer.delete("project", Project.parameter, use: projectController.deleteProject) // - done
     bearer.put("project", Project.parameter, use: projectController.updateProject) // - done
-    bearer.get("project", Project.parameter, use: projectController.projectDetail) // - done
+    bearer.get("project", Project.parameter, use: projectController.getDetails) // - done
     bearer.put("project", Project.parameter, "public", use: projectController.publicateProject) // - done
     bearer.put("project", Project.parameter, "checkout", use: projectController.checkoutProject) // - done
     

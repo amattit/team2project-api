@@ -65,7 +65,7 @@ extension ProjectController {
         }
     }
     /// don use
-    internal func getLinksRs(project: Project, on req: Request) throws -> Future<[LinkResponse]> {
+    func getLinksRs(project: Project, on req: Request) throws -> Future<[LinkResponse]> {
         return try project.links.query(on: req).all().map {
             return try $0.map {
                 LinkResponse(id: try $0.requireID(), title: $0.title, link: $0.link)

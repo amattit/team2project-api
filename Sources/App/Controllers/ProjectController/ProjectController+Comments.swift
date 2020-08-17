@@ -53,4 +53,17 @@ extension ProjectController {
             }
         }
     }
+    
+    internal func getCommentsFor(_ project: Project, on req: Request) throws -> Future<[CommentResponse]> {
+        return try project.comments
+            .query(on: req)
+            .join(\User.id, to: \Comment.ownerId)
+            .alsoDecode(User.self)
+            .all()
+            .map { comments in
+                try comments.map {
+                    try CommentResponse($0.0, user: $0.1)
+                }
+        }
+    }
 }

@@ -12,13 +12,35 @@ final class ProjectController {
             .flatMap { results in
                 return try results.map { res in
                     return try self.getFavoriteProjects(req).flatMap { favorites in
-                        return try self.getLabels(for: res.0, on: req).map { labels in
-                            return try ProjectListResponse(res.0, labels: labels, user: res.1, isFavorite: favorites.contains {$0.id == res.0.id})
+                        return try self.getLabels(for: res.0, on: req).flatMap { labels in
+                            return try self.getLikesForProject(res.0, on: req).flatMap { likes in
+                                return try self.getCommentsFor(res.0, on: req).map { comments in
+                                    let project = res.0
+                                    let user = res.1
+                                    let isFaorite = try favorites.contains(where: {
+                                        try $0.id == project.requireID()
+                                    })
+                                    var isLike = false
+                                    if try req.isAuthenticated(User.self) {
+                                        let user = try req.requireAuthenticated(User.self)
+                                        isLike = try likes.contains(where: {
+                                            try $0.user.id == user.requireID()
+                                        })
+                                    } else {
+                                        isLike = try likes.contains(where: {
+                                            try $0.user.id == user.requireID()
+                                        })
+                                    }
+                                    return try ProjectListResponse(res.0, labels: labels, user: res.1, isFavorite: isFaorite, isLike: isLike, likeCount: likes.count, commentCount: comments.count)
+                                }
+                            }
                         }
                     }
                 }.flatten(on: req)
         }
     }
+//    return try ProjectListResponse(res.0, labels: labels, user: res.1, isFavorite: favorites.contains {$0.id == res.0.id})
+    
     
     func allMyProjectsWithQueryOption(_ req: Request) throws -> Future<[ProjectListResponse]> {
         let user = try req.requireAuthenticated(User.self)
@@ -35,39 +57,41 @@ final class ProjectController {
         }
     }
     
-    func projectDetail(_ req: Request) throws -> Future<DetailProjectResponse> {
-        return try req.parameters.next(Project.self).flatMap { project in
-            if project.isPublished == 0 {
-                let _ = try req.requireAuthenticated(User.self)
-                return try self.getLabels(for: project, on: req).flatMap { labels in
-                    return try self.getLinksRs(project: project, on: req).flatMap { links in
-                        return project.user.get(on: req).flatMap { user in
-                            return try project.vacancy.query(on: req).all().map { vacancy in
-                                return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy, isPublished: project.isPublished.isPublished)
-                            }
-                        }
+    // Проект
+    // Метки
+    // Автор
+    // Лайки
+    // Комментарии
+    // Вакансии
+    // Избранный
+    func getDetails(_ req: Request) throws -> Future<DetailProjectResponse> {
+        return try req.parameters.next(Project.self)
+            .flatMap {
+                let project = $0
+                let labels = try self.getLabels(for: $0, on: req)
+                let comments = try self.getCommentsFor($0, on: req)
+                let likes = try self.getLikesForProject($0, on: req)
+                let links = try self.getLinksRs(project: $0, on: req)
+                let owner = $0.user.get(on: req)
+                let vacancy = try $0.vacancy.query(on: req).all()
+                if project.isPublished.isPublished {
+                    if try req.isAuthenticated(User.self) {
+                        let user = try req.requireAuthenticated(User.self)
+                        let favoritesProjects = try user.favoritesProjects.query(on: req).all()
+                        return try self.buildAuthProjectDetailResponse(project, labels: labels, comments: comments, likes: likes, links: links, owner: owner, vacancy: vacancy, favorites: favoritesProjects)
+                    } else {
+                        return try self.buildNoAuthProjectDetailResponse(project, labels: labels, comments: comments, likes: likes, links: links, owner: owner, vacancy: vacancy)
+                    }
+                    
+                } else {
+                    if try req.isAuthenticated(User.self) {
+                        let user = try req.requireAuthenticated(User.self)
+                        let favoritesProjects = try user.favoritesProjects.query(on: req).all()
+                        return try self.buildAuthProjectDetailResponse(project, labels: labels, comments: comments, likes: likes, links: links, owner: owner, vacancy: vacancy, favorites: favoritesProjects)
+                    } else {
+                        throw Abort(.notFound)
                     }
                 }
-            } else {
-                return try self.getLabels(for: project, on: req).flatMap { labels in
-                    return try self.getLinksRs(project: project, on: req).flatMap { links in
-                        return project.user.get(on: req).flatMap { user in
-                            return try project.vacancy.query(on: req).all().flatMap { vacancy in
-                                if try req.isAuthenticated(User.self) {
-                                    let selfUser = try req.requireAuthenticated(User.self)
-                                    return project.inFavorite.isAttached(selfUser, on: req).map { inFavorite in
-                                        return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy, isPublished: project.isPublished.isPublished, isFavorite: inFavorite)
-                                    }
-                                } else {
-                                    return LabelEnum.query(on: req).count().map { _ in
-                                        return try DetailProjectResponse(project, links: links, labels: labels, user: user, vacancy: vacancy, isPublished: project.isPublished.isPublished, isFavorite: false)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
     
@@ -139,4 +163,61 @@ final class ProjectController {
             return project.delete(on: req)
         }.transform(to: .ok)
     }
+    
+    private func buildNoAuthProjectDetailResponse(_ project: Project,
+                                              labels: EventLoopFuture<[LabelEnum]>,
+                                              comments: EventLoopFuture<[CommentResponse]>,
+                                              likes: EventLoopFuture<[LikeResponse]>,
+                                              links: EventLoopFuture<[ProjectController.LinkResponse]>,
+                                              owner: EventLoopFuture<User>,
+                                              vacancy: EventLoopFuture<[Vacancy]>,
+                                              isFavorite: Bool = false) throws -> Future<DetailProjectResponse> {
+          return labels.flatMap { labels in
+              return comments.flatMap { comments in
+                  return likes.flatMap { likes in
+                      return links.flatMap { links in
+                          return owner.flatMap { owner in
+                              return vacancy.map { vacancys in
+                                return try DetailProjectResponse(project, links: links, labels: labels, user: owner, isPublished: project.isPublished.isPublished, isFavorite: isFavorite, likes: likes, comments: comments)
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+      
+      private func buildAuthProjectDetailResponse(_ project: Project,
+                                              labels: EventLoopFuture<[LabelEnum]>,
+                                              comments: EventLoopFuture<[CommentResponse]>,
+                                              likes: EventLoopFuture<[LikeResponse]>,
+                                              links: EventLoopFuture<[ProjectController.LinkResponse]>,
+                                              owner: EventLoopFuture<User>,
+                                              vacancy: EventLoopFuture<[Vacancy]>,
+                                              favorites: EventLoopFuture<[Project]>) throws -> Future<DetailProjectResponse> {
+          return labels.flatMap { labels in
+              return comments.flatMap { comments in
+                  return likes.flatMap { likes in
+                      return links.flatMap { links in
+                          return owner.flatMap { owner in
+                              return vacancy.flatMap { vacancys in
+                                  return favorites.map { favorites in
+                                      return try DetailProjectResponse(project,
+                                                                       links: links,
+                                                                       labels: labels,
+                                                                       user: owner,
+                                                                       isPublished: project.isPublished.isPublished,
+                                                                       isFavorite: favorites.contains(where: {
+                                          try $0.requireID() == project.requireID()
+                                      }),
+                                    likes: likes,
+                                    comments: comments)
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
  }

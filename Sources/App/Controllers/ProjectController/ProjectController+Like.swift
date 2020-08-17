@@ -43,8 +43,8 @@ extension ProjectController {
     }
     
     func getProjectLikes(_ req: Request) throws -> Future<[LikeResponse]> {
-        return try req.parameters.next(Project.self).flatMap { projects in
-            return try projects.likes
+        return try req.parameters.next(Project.self).flatMap { project in
+            return try project.likes
                 .query(on: req)
                 .join(\User.id, to: \Like.ownerId)
                 .alsoDecode(User.self)
@@ -62,6 +62,19 @@ extension ProjectController {
             return try $0.likes.query(on: req).count().map {
                 return LikeCount(count: $0)
             }
+        }
+    }
+    
+    internal func getLikesForProject(_ project: Project, on req: Request) throws -> Future<[LikeResponse]> {
+        return try project.likes
+            .query(on: req)
+            .join(\User.id, to: \Like.ownerId)
+            .alsoDecode(User.self)
+            .all()
+            .map { results in
+                try results.map {
+                    LikeResponse(id: try $0.0.requireID(), user: try UserResponse(with: $0.1))
+                }
         }
     }
 }
